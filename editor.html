@@ -3,12 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Editor | Admin</title>
+    <title>Course Editor | Curriculum Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Import Vue as ES Module -->
+    <!-- Local styling overrides for premium feel -->
+    <style>
+        :root { --accent: #6366f1; --bg-dark: #050505; --panel: #0a0a0a; --border: #1a1a1a; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg-dark); color: #e5e5e5; }
+        
+        /* Glass & Panels */
+        .glass-panel { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(16px); border: 1px solid var(--border); }
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; transition: border-color 0.2s; }
+        .card:hover { border-color: #333; }
+        
+        /* Inputs */
+        .input-dark { background: #0f0f0f; border: 1px solid #222; color: white; padding: 0.75rem 1rem; border-radius: 8px; width: 100%; outline: none; transition: 0.2s; font-size: 0.9em; }
+        .input-dark:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1); }
+        .input-mini { padding: 0.4rem 0.6rem; font-size: 0.8rem; background: #151515; border: 1px solid #2a2a2a; border-radius: 6px; color: white; outline: none; }
+        .input-mini:focus { border-color: var(--accent); }
+
+        /* Range Slider Customization */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent); margin-top: -6px; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); cursor: pointer; border: 2px solid #1a1a1a; transition: transform 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #222; border-radius: 2px; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Transitions */
+        .slide-enter-active, .slide-leave-active { transition: all 0.3s ease; }
+        .slide-enter-from, .slide-leave-to { opacity: 0; transform: translateY(10px); }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+    
     <script type="importmap">
         {
             "imports": {
@@ -16,359 +50,367 @@
             }
         }
     </script>
-
-    <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #000; color: #e5e5e5; }
-        .glass { background: rgba(20,20,20,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .input-base { background: #0a0a0a; border: 1px solid #1f1f1f; color: white; padding: 0.6rem; border-radius: 0.5rem; width: 100%; outline: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .input-base:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); background: #111; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #444; }
-
-        /* Resizer Styles */
-        #resizer {
-            width: 4px;
-            cursor: col-resize;
-            background: transparent;
-            transition: background 0.2s;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 2px;
-        }
-        #resizer:hover, #resizer.active { background: #6366f1; }
-        #resizer::after {
-            content: '';
-            width: 2px;
-            height: 20px;
-            background: #333;
-            border-radius: 2px;
-        }
-        #resizer:hover::after { background: white; }
-
-        .markdown-preview h1 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; color: white; }
-        .markdown-preview h2 { font-size: 1.25em; font-weight: bold; margin-bottom: 0.5em; margin-top: 1em; color: #e0e0e0; }
-        .markdown-preview p { margin-bottom: 0.8em; line-height: 1.6; color: #d4d4d4; }
-        .markdown-preview ul { list-style: disc; margin-left: 1.5em; margin-bottom: 0.8em; }
-        .markdown-preview a { color: #6366f1; text-decoration: underline; }
-        .markdown-preview code { background: #222; padding: 0.2em 0.4em; rounded: 4px; font-family: monospace; font-size: 0.9em; }
-        .markdown-preview pre { background: #111; padding: 1em; rounded: 8px; overflow-x: auto; margin-bottom: 1em; border: 1px solid #222; }
-    </style>
 </head>
-<body class="min-h-screen p-4 flex flex-col h-screen overflow-hidden bg-black selection:bg-indigo-500/30">
+<body class="h-screen flex flex-col overflow-hidden bg-black selection:bg-indigo-500/30">
 
-    <div id="app" class="flex flex-col h-full max-w-[1600px] mx-auto w-full">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-4 shrink-0 px-2">
+    <div id="app" class="flex-1 flex flex-col h-full max-w-[1920px] mx-auto w-full relative">
+        
+        <!-- Top Bar -->
+        <header class="h-16 shrink-0 border-b border-[#1a1a1a] flex justify-between items-center px-6 bg-black/50 z-50">
             <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-white shadow-lg shadow-indigo-900/40">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </div>
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg cursor-default">C</div>
                 <div>
-                    <h1 class="text-xl font-bold text-white tracking-tight">Course Editor</h1>
-                    <div class="flex items-center gap-2 text-xs text-gray-500 font-mono">
-                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                        <span>Live Editing Mode</span>
-                    </div>
+                    <h1 class="text-sm font-bold text-white tracking-tight">Course Editor</h1>
+                    <p class="text-[10px] text-gray-500 font-mono">v3.0 • Curriculum Studio</p>
                 </div>
             </div>
             
-            <div class="flex gap-3">
-                <div class="relative group">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 transition-colors group-focus-within:text-indigo-500"></i>
-                    <input v-model="search" class="bg-[#111] border border-[#222] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-indigo-500 outline-none w-64 transition-all" placeholder="Search courses...">
-                </div>
-                <div class="h-9 w-[1px] bg-[#333] mx-1"></div>
-                
-                <button @click="createCourse" class="bg-[#111] hover:bg-[#222] text-white px-4 py-2 rounded-lg text-sm border border-[#222] transition-all hover:border-gray-600 flex items-center gap-2">
-                    <i class="fa-solid fa-plus text-indigo-400"></i> New Course
+            <div class="flex items-center gap-4">
+                <span v-if="unsavedChanges" class="text-xs text-amber-500 font-medium animate-pulse">● Unsaved Changes</span>
+                <button @click="saveData" class="bg-[#e0e0e0] hover:bg-white text-black px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Course Data
                 </button>
-                <button @click="saveFile" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-indigo-900/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Changes
-                </button>
+                <div class="w-[1px] h-6 bg-[#222] mx-2"></div>
+                <a href="index.html" target="_blank" class="text-gray-500 hover:text-white transition text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-eye"></i> Preview
+                </a>
             </div>
         </header>
 
-        <!-- Main Workspace -->
-        <div id="workspace" class="flex-1 flex overflow-hidden relative pb-2 rounded-2xl border border-[#222] bg-[#050505]">
+        <!-- Main Layout -->
+        <div class="flex-1 flex overflow-hidden">
             
-            <!-- Sidebar -->
-            <div id="left-pane" class="w-[25%] flex flex-col bg-[#080808] border-r border-[#1a1a1a]">
-                <div class="p-3 border-b border-[#1a1a1a] flex justify-between items-center bg-[#0a0a0a]">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Available Courses</span>
-                    <span class="text-xs font-mono text-gray-600">{{ filteredCourses.length }}</span>
+            <!-- Sidebar Navigation -->
+            <nav class="w-64 bg-[#080808] border-r border-[#1a1a1a] flex flex-col pt-6 pb-4 px-4 gap-1 shrink-0">
+                <div class="mb-4 px-2">
+                    <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Course</h2>
+                    <div class="text-sm font-bold text-white truncate">{{ course.title || 'Untitled Course' }}</div>
+                    <div class="text-[10px] text-indigo-400 font-mono bg-indigo-900/10 inline-block px-1.5 rounded mt-1 border border-indigo-900/30">{{ course.code }}</div>
                 </div>
-                <div class="overflow-y-auto flex-1 p-3 space-y-2">
-                    <div v-for="course in filteredCourses" :key="course.id" 
-                        @click="selectCourse(course)"
-                        :class="['p-3 rounded-lg border cursor-pointer transition-all duration-200 group relative', 
-                            selected && selected.id === course.id 
-                            ? 'bg-indigo-900/20 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]' 
-                            : 'bg-[#111] border-[#222] hover:border-[#333] hover:bg-[#151515]']">
+
+                <div class="h-[1px] bg-[#1a1a1a] my-2"></div>
+
+                <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+                    :class="['w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium transition flex items-center gap-3', 
+                    activeTab === tab.id ? 'bg-[#151515] text-white border border-[#2a2a2a]' : 'text-gray-500 hover:text-gray-300 hover:bg-[#111]']">
+                    <i :class="[tab.icon, activeTab === tab.id ? 'text-indigo-500' : '']"></i> {{ tab.label }}
+                </button>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto bg-[#050505] p-8 lg:p-10 relative">
+                
+                <!-- ESSENTIALS TAB -->
+                <transition name="fade" mode="out-in">
+                <div v-if="activeTab === 'essentials'" class="max-w-4xl mx-auto space-y-8 animate-fade-in">
+                    <h2 class="text-2xl font-bold text-white mb-6">Course Essentials</h2>
+                    
+                    <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#0a0a0a]">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Course Title</label>
+                            <input v-model="course.title" class="input-dark text-lg font-bold" placeholder="E.g. Computational Thinking">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Course Code</label>
+                            <input v-model="course.code" class="input-dark font-mono text-indigo-400" placeholder="BSCS1001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Designated Level</label>
+                            <select v-model="course.level" class="input-dark">
+                                <option value="Foundation">Foundation</option>
+                                <option value="Diploma">Diploma</option>
+                                <option value="Degree">Degree</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                                 <span>Synopsis (Markdown Supported)</span>
+                                 <i class="fa-brands fa-markdown opacity-50"></i>
+                             </label>
+                             <textarea v-model="course.synopsis" class="input-dark h-32 resize-y font-mono text-sm text-gray-400" placeholder="Enter course description..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRADING TAB -->
+                <div v-else-if="activeTab === 'grading'" class="max-w-3xl mx-auto space-y-8 animate-fade-in">
+                    <h2 class="text-2xl font-bold text-white mb-6">Grading Scheme</h2>
+                    
+                    <div class="card p-8 bg-[#0a0a0a]">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-8">Weights Distribution</h3>
                         
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black text-indigo-400 border border-[#222]">{{ course.code }}</span>
-                            <button @click.stop="deleteCourse(course.id)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                            </button>
+                        <div class="space-y-8">
+                            <div v-for="(weight, key) in course.grading" :key="key">
+                                <div class="flex justify-between text-sm mb-2 font-medium">
+                                    <span class="capitalize text-gray-300">{{ key.replace(/([A-Z])/g, ' $1').trim() }}</span>
+                                    <span class="text-white">{{ weight }}%</span>
+                                </div>
+                                <input type="range" v-model.number="course.grading[key]" min="0" max="100" />
+                            </div>
                         </div>
-                        <h3 class="font-medium text-gray-200 text-sm group-hover:text-white truncate">{{ course.name }}</h3>
-                        <p class="text-[11px] text-gray-500 mt-1 line-clamp-2">{{ course.desc || 'No description' }}</p>
+
+                        <div class="mt-8 pt-6 border-t border-[#222] flex justify-between items-center">
+                            <span class="font-bold text-white text-lg">Total</span>
+                            <span :class="['font-bold text-lg', totalWeight === 100 ? 'text-green-500' : 'text-red-500']">{{ totalWeight }}%</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Resizer Handle -->
-            <div id="resizer"></div>
-
-            <!-- Editor Pane -->
-            <div id="right-pane" class="w-[75%] flex flex-col bg-[#050505] relative overflow-hidden">
-                <div v-if="selected" class="h-full flex flex-col">
-                    <!-- Tabs -->
-                    <div class="flex bg-[#0a0a0a] border-b border-[#1a1a1a]">
-                        <button v-for="tab in tabs" :key="tab" @click="activeTab = tab" 
-                            :class="['px-6 py-3 text-xs font-bold uppercase tracking-widest border-b-2 transition-all hover:bg-[#111]', 
-                                activeTab === tab 
-                                ? 'border-indigo-500 text-white bg-[#0f0f0f]' 
-                                : 'border-transparent text-gray-500 hover:text-gray-300']">
-                            {{ tab }}
+                <!-- CURRICULUM TAB (Builder) -->
+                <div v-else-if="activeTab === 'curriculum'" class="max-w-5xl mx-auto space-y-6 animate-fade-in">
+                     <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">Curriculum Builder</h2>
+                        <button @click="addWeek" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-900/20">
+                            + Add Week
                         </button>
-                        <div class="flex-1 drag-region"></div> <!-- Spacer -->
                     </div>
 
-                    <div class="flex-1 overflow-y-auto p-8 relative">
-                        <!-- General Tab -->
-                        <div v-if="activeTab === 'General'" class="space-y-6 max-w-3xl mx-auto animate-fade-in">
-                            <div class="grid grid-cols-12 gap-6">
-                                <div class="col-span-4">
-                                    <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">Code</label>
-                                    <input v-model="selected.code" class="input-base font-mono text-indigo-400 font-bold" placeholder="CS101">
-                                </div>
-                                <div class="col-span-8">
-                                    <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">Course Name</label>
-                                    <input v-model="selected.name" class="input-base text-lg font-bold" placeholder="Introduction to...">
-                                </div>
+                    <div v-for="(week, wIdx) in course.weeks" :key="wIdx" class="card bg-[#0a0a0a] overflow-hidden group">
+                        <!-- Week Header -->
+                        <div class="p-4 flex items-center justify-between border-b border-[#1a1a1a] bg-[#111] cursor-pointer" @click="week.isOpen = !week.isOpen">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center text-xs font-mono font-bold text-gray-500">W{{ wIdx + 1 }}</div>
+                                <input v-model="week.title" @click.stop class="bg-transparent text-white font-bold text-lg outline-none placeholder-gray-600" placeholder="Week Title">
                             </div>
-                            
-                            <!-- Description -->
-                            <div class="grid grid-cols-2 gap-6 h-[400px]">
-                                <div class="flex flex-col h-full">
-                                    <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide flex justify-between">
-                                        <span>Description (Markdown)</span>
-                                        <i class="fa-brands fa-markdown text-lg"></i>
-                                    </label>
-                                    <textarea v-model="selected.desc" class="input-base flex-1 font-mono text-sm leading-relaxed text-gray-300 resize-none focus:bg-[#0c0c0c]" placeholder="# Course Overview..."></textarea>
+                            <div class="flex items-center gap-2">
+                                <div class="text-[10px] text-gray-600 font-mono mr-2 hidden md:block">
+                                    {{ getItemCount(week, 'video') }} Lectures • {{ getItemCount(week, 'resource') }} Resources • {{ getItemCount(week, 'quiz') }} Quizzes
                                 </div>
-                                <div class="flex flex-col h-full overflow-hidden">
-                                     <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">Live Preview</label>
-                                    <div class="flex-1 glass rounded-lg border border-[#222] p-4 overflow-y-auto markdown-preview" v-html="renderMd(selected.desc)"></div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-3 gap-6">
-                                <div>
-                                    <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">Credits</label>
-                                    <input v-model.number="selected.credits" type="number" class="input-base">
-                                </div>
-                                <div class="col-span-2">
-                                     <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">Tags</label>
-                                     <input :value="selected.tags.join(', ')" @input="selected.tags = $event.target.value.split(',').map(t=>t.trim())" class="input-base" placeholder="math, cs, advanced">
-                                </div>
+                                <button @click.stop="deleteWeek(wIdx)" class="text-gray-600 hover:text-red-500 p-2 transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button>
+                                <i class="fa-solid fa-chevron-down text-gray-500 transition-transform duration-200" :class="{'rotate-180': week.isOpen}"></i>
                             </div>
                         </div>
 
-                        <!-- Syllabus Tab -->
-                        <div v-if="activeTab === 'Syllabus'" class="space-y-4 max-w-4xl mx-auto animate-fade-in">
-                            <div v-for="(week, wIdx) in selected.weeks" :key="wIdx" class="bg-[#0a0a0a] border border-[#222] rounded-xl overflow-hidden transition-all hover:border-[#333]">
-                                <div class="px-4 py-3 bg-[#111] border-b border-[#1f1f1f] flex justify-between items-center cursor-pointer select-none" @click="week.isOpen = !week.isOpen">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-8 h-8 rounded-lg bg-[#1a1a1a] flex items-center justify-center text-xs font-mono font-bold text-gray-400 border border-[#2a2a2a]">W{{ wIdx + 1 }}</div>
-                                        <input v-model="week.title" @click.stop class="bg-transparent text-sm font-bold text-gray-200 outline-none w-64 placeholder-gray-600" placeholder="Week Title">
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click.stop="week.isOpen = !week.isOpen" class="text-gray-500 hover:text-white transition">
-                                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" :class="{'rotate-180': week.isOpen}"></i>
-                                        </button>
-                                        <button @click.stop="selected.weeks.splice(wIdx, 1)" class="text-gray-600 hover:text-red-500 transition px-2">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div v-if="week.isOpen" class="grid grid-cols-2 h-64">
-                                    <textarea v-model="week.content" class="bg-[#080808] p-4 text-sm text-gray-400 outline-none resize-none font-mono border-r border-[#222]" placeholder="Week content in Markdown..."></textarea>
-                                    <div class="p-4 overflow-y-auto markdown-preview bg-black/20" v-html="renderMd(week.content)"></div>
-                                </div>
-                            </div>
-                            
-                            <button @click="selected.weeks.push({title: 'New Week', content: '', isOpen: true})" 
-                                class="w-full py-4 border border-dashed border-[#333] rounded-xl text-xs text-gray-500 hover:text-indigo-400 hover:border-indigo-500/50 transition font-bold uppercase tracking-wider flex items-center justify-center gap-2 group">
-                                <i class="fa-solid fa-plus group-hover:scale-110 transition"></i> Add Week
-                            </button>
+                        <!-- Week Content -->
+                        <div v-if="week.isOpen" class="p-4 bg-[#0a0a0a]">
+                             <!-- Action Bar -->
+                             <div class="grid grid-cols-3 gap-4 mb-6">
+                                 <button @click="addItem(week, 'video')" class="py-3 border border-dashed border-[#333] rounded-lg text-xs font-bold text-gray-500 hover:text-red-400 hover:border-red-500/30 transition flex items-center justify-center gap-2">
+                                     <i class="fa-brands fa-youtube"></i> Add Video
+                                 </button>
+                                 <button @click="addItem(week, 'resource')" class="py-3 border border-dashed border-[#333] rounded-lg text-xs font-bold text-gray-500 hover:text-green-400 hover:border-green-500/30 transition flex items-center justify-center gap-2">
+                                     <i class="fa-solid fa-link"></i> Add Resource
+                                 </button>
+                                 <button @click="addItem(week, 'quiz')" class="py-3 border border-dashed border-[#333] rounded-lg text-xs font-bold text-gray-500 hover:text-orange-400 hover:border-orange-500/30 transition flex items-center justify-center gap-2">
+                                     <i class="fa-solid fa-list-check"></i> Add Quiz
+                                 </button>
+                             </div>
+
+                             <!-- Items List -->
+                             <div class="space-y-3">
+                                 <div v-for="(item, iIdx) in week.content" :key="iIdx" class="relative group/item">
+                                     
+                                    <!-- Video Item -->
+                                     <div v-if="item.type === 'video'" class="flex items-center gap-4 p-4 rounded-xl bg-[#111] border border-[#222] border-l-4 border-l-red-500/50">
+                                         <div class="text-red-500"><i class="fa-brands fa-youtube text-xl"></i></div>
+                                         <div class="flex-1 grid gap-2">
+                                             <input v-model="item.title" class="bg-transparent text-sm font-bold text-white outline-none" placeholder="Video Title">
+                                             <div class="flex items-center gap-2">
+                                                 <input v-model="item.url" class="bg-[#050505] text-xs text-blue-400 px-2 py-1 rounded border border-[#222] flex-1 outline-none font-mono" placeholder="YouTube Video ID">
+                                                 <input v-model="item.duration" class="bg-[#050505] text-xs text-gray-400 px-2 py-1 rounded border border-[#222] w-20 outline-none text-center" placeholder="10:00">
+                                             </div>
+                                         </div>
+                                         <!-- Preview Thumbnail -->
+                                         <div class="w-16 h-10 bg-black rounded overflow-hidden relative">
+                                             <img v-if="item.url" :src="`https://img.youtube.com/vi/${item.url}/mqdefault.jpg`" class="w-full h-full object-cover opacity-50">
+                                         </div>
+                                         <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                                     </div>
+
+                                     <!-- Resource Item -->
+                                     <div v-if="item.type === 'resource'" class="flex items-center gap-4 p-4 rounded-xl bg-[#111] border border-[#222] border-l-4 border-l-green-500/50">
+                                         <div class="text-green-500"><i class="fa-solid fa-link text-xl"></i></div>
+                                         <div class="flex-1 grid gap-2">
+                                             <div class="flex items-center gap-2">
+                                                 <input v-model="item.title" class="bg-transparent text-sm font-bold text-white flex-1 outline-none" placeholder="Resource Title">
+                                                 <select v-model="item.format" class="bg-[#050505] text-[10px] text-gray-400 px-2 py-1 rounded border border-[#222] outline-none">
+                                                     <option value="link">Link</option>
+                                                     <option value="pdf">PDF</option>
+                                                 </select>
+                                             </div>
+                                             <input v-model="item.url" class="bg-[#050505] text-xs text-green-400 px-2 py-1 rounded border border-[#222] w-full outline-none font-mono" placeholder="https://...">
+                                         </div>
+                                         <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                                     </div>
+
+                                     <!-- Quiz Item -->
+                                     <div v-if="item.type === 'quiz'" class="flex flex-col gap-4 p-4 rounded-xl bg-[#111] border border-[#222] border-l-4 border-l-orange-500/50">
+                                         <div class="flex items-center justify-between">
+                                             <div class="flex items-center gap-4">
+                                                 <div class="text-orange-500"><i class="fa-solid fa-list-check text-xl"></i></div>
+                                                 <input v-model="item.title" class="bg-transparent text-sm font-bold text-white outline-none w-64" placeholder="Quiz Title">
+                                                 <span class="text-xs text-gray-600 font-mono border border-[#333] px-2 py-0.5 rounded">{{ item.questions.length }} Questions</span>
+                                             </div>
+                                             <div class="flex items-center gap-3">
+                                                 <button @click="item.isOpen = !item.isOpen" class="text-gray-500 hover:text-white text-xs underline">{{ item.isOpen ? 'Collapse' : 'Edit Questions' }}</button>
+                                                 <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                                             </div>
+                                         </div>
+                                         
+                                         <!-- Quiz Builder -->
+                                         <div v-if="item.isOpen" class="mt-2 pl-10 border-t border-[#222] pt-4 space-y-4">
+                                             <div v-for="(q, qIdx) in item.questions" :key="qIdx" class="bg-[#0a0a0a] border border-[#222] p-4 rounded-lg relative">
+                                                 <div class="flex justify-between mb-3">
+                                                     <div class="flex items-center gap-2">
+                                                         <span class="text-xs font-mono text-gray-500">Q{{qIdx+1}}</span>
+                                                         <select v-model="q.type" class="input-mini">
+                                                             <option value="mcq">MCQ</option>
+                                                             <option value="msq">MSQ</option>
+                                                             <option value="nat">Numeric</option>
+                                                             <option value="bool">T/F</option>
+                                                         </select>
+                                                     </div>
+                                                     <button @click="item.questions.splice(qIdx, 1)" class="text-gray-700 hover:text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                                                 </div>
+                                                 
+                                                 <input v-model="q.text" class="input-dark mb-3 text-sm font-bold" placeholder="Question Text...">
+                                                 
+                                                 <!-- Options Builder -->
+                                                 <div v-if="['mcq', 'msq'].includes(q.type)" class="space-y-2 pl-4 border-l border-[#222]">
+                                                     <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex items-center gap-2">
+                                                         <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+                                                         <input v-model="q.options[oIdx]" class="bg-transparent text-sm text-gray-400 outline-none flex-1 border-b border-transparent focus:border-[#444]" placeholder="Option text">
+                                                         <button @click="q.options.splice(oIdx, 1)" class="text-gray-700 hover:text-white"><i class="fa-solid fa-minus"></i></button>
+                                                     </div>
+                                                     <button @click="q.options.push('')" class="text-[10px] text-indigo-500 hover:text-indigo-400 mt-1 font-bold">+ Add Option</button>
+                                                 </div>
+                                             </div>
+                                             <button @click="addQuestion(item)" class="w-full py-2 border border-[#333] bg-[#111] text-gray-500 hover:text-white text-xs rounded transition">+ Add Question</button>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
+                    </div>
 
-                         <!-- Resources Tab -->
-                        <div v-if="activeTab === 'Resources'" class="space-y-4 max-w-3xl mx-auto animate-fade-in">
-                            <div v-if="selected.resources.length === 0" class="text-center py-10 text-gray-600">
-                                <i class="fa-regular fa-folder-open text-3xl mb-3"></i>
-                                <p class="text-sm">No resources added yet.</p>
-                            </div>
+                    <div v-if="course.weeks.length === 0" class="text-center py-16 text-gray-600 border border-dashed border-[#222] rounded-xl">
+                        <p>No content yet. Add a week to start building the curriculum.</p>
+                    </div>
+                </div>
+                </transition>
 
-                            <div v-for="(res, rIdx) in selected.resources" :key="rIdx" class="flex gap-3 items-center bg-[#0a0a0a] p-3 rounded-xl border border-[#222] group hover:border-[#333] transition">
-                                <div class="px-3 py-2 bg-[#111] rounded text-xs text-indigo-400 border border-[#222]">
-                                    <i v-if="res.type === 'link'" class="fa-solid fa-link"></i>
-                                    <i v-else-if="res.type === 'pdf'" class="fa-regular fa-file-pdf"></i>
-                                    <i v-else-if="res.type === 'video'" class="fa-solid fa-play"></i>
-                                    <span v-else class="text-[10px] uppercase font-bold">{{ res.type }}</span>
-                                </div>
-                                
-                                <select v-model="res.type" class="bg-transparent text-xs text-gray-500 outline-none w-20">
-                                    <option value="link">Link</option>
-                                    <option value="pdf">PDF</option>
-                                    <option value="video">Video</option>
-                                </select>
-                                
-                                <div class="w-[1px] h-6 bg-[#222]"></div>
-                                
-                                <input v-model="res.title" class="flex-1 bg-transparent text-sm text-white outline-none placeholder-gray-700" placeholder="Resource Title">
-                                <input v-model="res.url" class="flex-1 bg-transparent text-sm text-blue-400 font-mono outline-none placeholder-gray-800" placeholder="https://...">
-                                
-                                <button @click="selected.resources.splice(rIdx, 1)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10 hover:text-red-500 text-gray-600 transition">
-                                    <i class="fa-solid fa-trash-can text-xs"></i>
-                                </button>
-                            </div>
-                            
-                            <button @click="selected.resources.push({type:'link', title:'', url:''})" class="mt-6 px-5 py-2.5 bg-[#111] hover:bg-[#1a1a1a] text-xs font-bold text-gray-300 rounded-lg border border-[#333] transition flex items-center gap-2">
-                                <i class="fa-solid fa-plus text-indigo-500"></i> Add Resource
-                            </button>
+                <!-- TOOLBAR PANEL (Quick Tools) -->
+                <div v-if="activeTab === 'media'" class="max-w-3xl mx-auto space-y-6">
+                    <h2 class="text-2xl font-bold text-white mb-6">Media Tools</h2>
+                    
+                    <div class="card p-6 bg-[#0a0a0a]">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Image Resizer & Converter</h3>
+                        <input type="file" @change="handleImageTool" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-900/20 file:text-indigo-400 hover:file:bg-indigo-900/40 mb-4"/>
+                        <div v-if="imageToolResult" class="bg-[#111] p-4 rounded border border-[#222]">
+                            <p class="text-xs text-green-400 mb-2">Processed Successfully!</p>
+                            <img :src="imageToolResult" class="max-h-64 rounded border border-[#333]">
                         </div>
                     </div>
                 </div>
 
-                <!-- Empty State -->
-                <div v-else class="h-full flex flex-col items-center justify-center text-gray-700 select-none">
-                    <div class="w-24 h-24 rounded-full bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-2xl shadow-black/50">
-                        <i class="fa-solid fa-layer-group text-3xl opacity-30"></i>
-                    </div>
-                    <h2 class="text-xl font-bold text-gray-500 mb-2">No Course Selected</h2>
-                    <p class="text-sm max-w-xs text-center text-gray-600">Select a course from the sidebar or modify the source file to get started.</p>
-                </div>
-            </div>
+            </main>
         </div>
-
-        <!-- Notification Toast -->
-        <Transition name="toast">
-            <div v-if="notification" class="fixed bottom-6 right-6 z-50 px-5 py-4 rounded-xl shadow-2xl border border-indigo-500/30 bg-[#0c0c0c] text-white flex items-center gap-4">
-                <div class="w-6 h-6 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center"><i class="fa-solid fa-check text-xs"></i></div>
-                <span class="text-sm font-medium">{{ notification }}</span>
-            </div>
-        </Transition>
-
     </div>
 
-    <!-- Initialization Script -->
+    <!-- Logic -->
     <script type="module">
         import { createApp } from 'vue';
-        import { renderMarkdown, configureMarkdown } from './src/md.js';
-        import { initResizer } from './src/resizer.js';
-        import { loadCourses, saveCoursesToFile } from './src/compiler.js';
-        
-        // Init Markdown
-        configureMarkdown();
+        import { loadCourseData, saveCourseToBlob } from './src/compiler.js';
+        import { ImageTools } from './src/media.js';
 
         createApp({
             data() {
                 return {
-                    courses: [],
-                    selected: null,
-                    search: '',
-                    activeTab: 'General',
-                    tabs: ['General', 'Syllabus', 'Resources'],
-                    notification: null
+                    course: { grading: {}, weeks: [] }, // Init empty to avoid hydration errors
+                    activeTab: 'essentials',
+                    tabs: [
+                        { id: 'essentials', label: 'Essentials', icon: 'fa-solid fa-sliders' },
+                        { id: 'grading', label: 'Grading', icon: 'fa-solid fa-scale-balanced' },
+                        { id: 'curriculum', label: 'Curriculum', icon: 'fa-solid fa-layer-group' },
+                        { id: 'media', label: 'Media Tools', icon: 'fa-solid fa-image' }
+                    ],
+                    unsavedChanges: false,
+                    imageToolResult: null
                 }
             },
             computed: {
-                filteredCourses() {
-                    if(!this.courses) return [];
-                    const q = this.search.toLowerCase();
-                    return this.courses.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+                totalWeight() {
+                    if(!this.course.grading) return 0;
+                    return Object.values(this.course.grading).reduce((a, b) => a + Number(b), 0);
+                }
+            },
+            watch: {
+                course: {
+                    handler() { this.unsavedChanges = true; },
+                    deep: true
                 }
             },
             async mounted() {
-                // Initialize Resizer
-                initResizer('resizer', 'left-pane', 'right-pane', 'workspace', 'horizontal');
-                
-                // Load Data
-                this.courses = await loadCourses('./course.json');
+                const data = await loadCourseData('./course.json');
+                this.course = data;
+                 // Reset unsaved flag after load
+                this.$nextTick(() => this.unsavedChanges = false);
             },
             methods: {
-                selectCourse(c) {
-                    this.selected = c;
-                    this.activeTab = 'General';
-                },
-                createCourse() {
-                    const newC = {
-                        id: Date.now().toString(),
-                        code: 'NEW',
-                        name: 'New Course',
-                        desc: '',
-                        credits: 4,
-                        tags: [],
-                        weeks: [],
-                        resources: []
-                    };
-                    this.courses.push(newC);
-                    this.selectCourse(newC);
-                },
-                deleteCourse(id) {
-                    if(confirm('Delete this course?')) {
-                        this.courses = this.courses.filter(c => c.id !== id);
-                        if(this.selected && this.selected.id === id) this.selected = null;
-                    }
-                },
-                renderMd(text) {
-                    return renderMarkdown(text);
-                },
-                async saveFile() {
+                async saveData() {
                     try {
-                        const blob = saveCoursesToFile(this.courses);
-                        // Trigger download/save
-                        if (window.showSaveFilePicker) {
+                        const blob = saveCourseToBlob(this.course);
+                         if (window.showSaveFilePicker) {
                             try {
                                 const handle = await window.showSaveFilePicker({ suggestedName: 'course.json' });
                                 const writable = await handle.createWritable();
                                 await writable.write(await blob.text());
                                 await writable.close();
-                                this.showNotification('Changes saved to course.json');
-                            } catch (pickerErr) {
-                                // User cancelled or not supported, fallback to download
-                                console.log("Picker cancelled or error", pickerErr);
-                            }
+                                this.unsavedChanges = false;
+                                alert("Saved Successfully");
+                            } catch (e) { console.log('Cancelled'); }
                         } else {
                             const a = document.createElement('a'); 
                             a.href = URL.createObjectURL(blob); 
                             a.download = 'course.json'; 
                             a.click();
-                            this.showNotification('Downloaded course.json');
+                            this.unsavedChanges = false;
                         }
-                    } catch (err) { console.error(err); }
+                    } catch (e) {
+                        alert("Error saving: " + e.message);
+                    }
                 },
-                showNotification(msg) {
-                    this.notification = msg;
-                    setTimeout(() => this.notification = null, 3000);
+                addWeek() {
+                    if(!this.course.weeks) this.course.weeks = [];
+                    this.course.weeks.push({
+                        title: 'New Module',
+                        isOpen: true,
+                        content: []
+                    });
+                },
+                deleteWeek(idx) {
+                    if(confirm('Delete this week and all its content?')) this.course.weeks.splice(idx, 1);
+                },
+                addItem(week, type) {
+                    const baseItem = { id: Date.now(), type, title: 'New Item' };
+                    if(type === 'video') Object.assign(baseItem, { url: '', duration: '' });
+                    if(type === 'resource') Object.assign(baseItem, { url: '', format: 'link' });
+                    if(type === 'quiz') Object.assign(baseItem, { questions: [], isOpen: true });
+                    week.content.push(baseItem);
+                },
+                addQuestion(quizItem) {
+                    quizItem.questions.push({
+                        type: 'mcq',
+                        text: '',
+                        options: ['', '']
+                    });
+                },
+                getItemCount(week, type) {
+                    if(!week.content) return 0;
+                    return week.content.filter(i => i.type === type).length;
+                },
+                async handleImageTool(e) {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    try {
+                        const blob = await ImageTools.processImage(file, { maxWidth: 800, format: 'image/webp' });
+                        this.imageToolResult = URL.createObjectURL(blob);
+                    } catch (err) {
+                        alert('Error processing image');
+                    }
                 }
             }
         }).mount('#app');
     </script>
-    
-    <style>
-        .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
-        .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(20px); }
-    </style>
 </body>
 </html>
