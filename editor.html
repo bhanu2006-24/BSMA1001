@@ -3,34 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Builder | Curriculum Studio</title>
+    <title>Universal Course Creator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
     <style>
-        :root { --accent: #6366f1; --bg: #09090b; --panel: #18181b; --border: #27272a; }
-        body { font-family: 'Space Grotesk', sans-serif; background-color: var(--bg); color: #e4e4e7; }
-        
-        .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
-        .input-dark { background: #09090b; border: 1px solid var(--border); color: #eee; padding: 0.6rem; width: 100%; border-radius: 8px; outline: none; transition: border-color 0.2s; }
-        .input-dark:focus { border-color: var(--accent); }
-        
-        .btn-primary { background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.9em; transition: 0.2s; }
+        :root { --bg: #09090b; --surface: #18181b; --border: #27272a; --accent: #3b82f6; --text: #e4e4e7; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+        .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; }
+        .input { background: #09090b; border: 1px solid var(--border); color: white; padding: 0.5rem 0.75rem; border-radius: 0.375rem; width: 100%; font-size: 0.875rem; outline: none; transition: border-color 0.15s; }
+        .input:focus { border-color: var(--accent); }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; font-size: 0.875rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary { background: var(--accent); color: white; }
         .btn-primary:hover { filter: brightness(1.1); }
+        .btn-secondary { background: #27272a; color: white; }
+        .btn-secondary:hover { background: #3f3f46; }
+        .btn-anger { background: #450a0a; color: #fca5a5; }
+        .btn-anger:hover { background: #7f1d1d; }
         
-        .btn-ghost { background: transparent; color: #a1a1aa; padding: 0.5rem; border-radius: 6px; transition: 0.2s; }
-        .btn-ghost:hover { background: #27272a; color: white; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
 
-        .drag-handle { cursor: grab; color: #52525b; }
-        .drag-handle:active { cursor: grabbing; }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+        .drag-handle { cursor: grab; color: #71717a; }
+        .drag-handle:active { cursor: grabbing; color: white; }
     </style>
-    
     <script type="importmap">
         {
             "imports": {
@@ -42,174 +41,198 @@
 <body class="h-screen flex flex-col overflow-hidden">
 
     <div id="app" class="flex-1 flex flex-col h-full">
-        
         <!-- Header -->
-        <header class="h-16 shrink-0 border-b border-[#27272a] bg-[#09090b] flex justify-between items-center px-6 z-20">
+        <header class="h-14 border-b border-[#27272a] flex items-center justify-between px-6 bg-[#09090b]">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-cube"></i></div>
-                <div>
-                    <h1 class="text-white font-bold tracking-tight text-sm">Universal Builder</h1>
-                    <p class="text-[10px] text-gray-500 font-mono">{{ course.meta.title || 'Untitled' }}</p>
-                </div>
+                <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-white"><i class="fa-solid fa-layer-group"></i></div>
+                <span class="font-bold text-sm tracking-wide">COURSE CREATOR</span>
             </div>
-            
             <div class="flex items-center gap-4">
-                <span v-if="unsavedChanges" class="text-amber-500 text-xs font-bold animate-pulse">● Unsaved</span>
-                <button @click="saveData" class="btn-primary flex items-center gap-2">
-                    <i class="fa-solid fa-save"></i> Save JSON
-                </button>
-                <div class="w-[1px] h-6 bg-[#27272a]"></div>
-                <a href="index.html" target="_blank" class="btn-ghost" title="Preview">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
+                 <span v-if="hasUnsaved" class="text-xs text-yellow-500 font-mono">● Unsaved Changes</span>
+                 <button @click="save" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save JSON</button>
+                 <a href="index.html" target="_blank" class="btn btn-secondary"><i class="fa-solid fa-eye"></i> Preview</a>
             </div>
         </header>
 
         <div class="flex-1 flex overflow-hidden">
-            
-            <!-- Left Sidebar -->
-            <aside class="w-80 bg-[#121214] border-r border-[#27272a] flex flex-col p-4 z-10">
-                <div class="mb-4 flex justify-between items-center">
-                    <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Structure</h2>
-                    <button @click="showAddMenu = !showAddMenu" class="text-xs text-indigo-400 font-bold hover:text-indigo-300 transition">+ Add Section</button>
-                </div>
-                
-                <div v-if="showAddMenu" class="mb-4 grid grid-cols-2 gap-2 bg-[#18181b] p-2 rounded-lg border border-[#27272a] animate-fade-in">
-                    <button @click="addSection('text')" class="text-xs p-2 rounded hover:bg-[#27272a] text-left"><i class="fa-solid fa-paragraph w-5 text-gray-400"></i> Text/About</button>
-                    <button @click="addSection('module')" class="text-xs p-2 rounded hover:bg-[#27272a] text-left"><i class="fa-solid fa-layer-group w-5 text-gray-400"></i> Module</button>
-                    <button @click="addSection('compiler')" class="text-xs p-2 rounded hover:bg-[#27272a] text-left"><i class="fa-solid fa-code w-5 text-gray-400"></i> Compiler</button>
-                    <button @click="addSection('faq')" class="text-xs p-2 rounded hover:bg-[#27272a] text-left"><i class="fa-solid fa-circle-question w-5 text-gray-400"></i> FAQ</button>
+            <!-- Sidebar -->
+            <aside class="w-72 border-r border-[#27272a] flex flex-col bg-[#121212]">
+                <div class="p-4 border-b border-[#27272a] flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Structure</span>
+                    <button @click="showAddMenu = !showAddMenu" class="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-600/30 transition">+ Add</button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto space-y-2 pr-2 section-list" ref="sortableList">
-                    <div @click="activeSection = 'meta'" :class="['p-3 rounded-lg border cursor-pointer flex items-center gap-3 transition', activeSection === 'meta' ? 'bg-indigo-900/10 border-indigo-500/50' : 'bg-[#18181b] border-transparent hover:border-[#3f3f46]']">
-                        <i class="fa-solid fa-gear text-gray-500"></i>
-                        <span class="text-sm font-medium">Global Settings</span>
+                <!-- Add Menu -->
+                <div v-if="showAddMenu" class="p-2 grid grid-cols-2 gap-2 bg-[#18181b] border-b border-[#27272a]">
+                    <button @click="addSec('text')" class="flex flex-col items-center p-2 rounded hover:bg-[#27272a] gap-1 text-gray-400 hover:text-white transition">
+                        <i class="fa-solid fa-paragraph"></i> <span class="text-[10px]">Text</span>
+                    </button>
+                    <button @click="addSec('module')" class="flex flex-col items-center p-2 rounded hover:bg-[#27272a] gap-1 text-gray-400 hover:text-white transition">
+                        <i class="fa-solid fa-list"></i> <span class="text-[10px]">Module</span>
+                    </button>
+                    <button @click="addSec('compiler')" class="flex flex-col items-center p-2 rounded hover:bg-[#27272a] gap-1 text-gray-400 hover:text-white transition">
+                        <i class="fa-solid fa-code"></i> <span class="text-[10px]">Code</span>
+                    </button>
+                    <button @click="addSec('faq')" class="flex flex-col items-center p-2 rounded hover:bg-[#27272a] gap-1 text-gray-400 hover:text-white transition">
+                        <i class="fa-solid fa-question"></i> <span class="text-[10px]">FAQ</span>
+                    </button>
+                     <button @click="addSec('calendar')" class="flex flex-col items-center p-2 rounded hover:bg-[#27272a] gap-1 text-gray-400 hover:text-white transition">
+                        <i class="fa-solid fa-calendar"></i> <span class="text-[10px]">Calendar</span>
+                    </button>
+                </div>
+
+                <!-- List -->
+                <div class="flex-1 overflow-y-auto p-2 space-y-1" ref="sortList">
+                    <div @click="activeId = 'meta'" :class="['p-2 rounded cursor-pointer flex items-center gap-3 text-sm font-medium transition', activeId === 'meta' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-[#27272a] hover:text-gray-200']">
+                        <i class="fa-solid fa-gear"></i> Settings
                     </div>
-                    
                     <div v-for="(sec, idx) in course.sections" :key="sec.id" 
-                        @click="activeSection = sec.id"
-                        :class="['p-3 rounded-lg border cursor-pointer flex items-center justify-between group transition relative', activeSection === sec.id ? 'bg-[#18181b] border-indigo-500 active' : 'bg-[#18181b] border-transparent hover:border-[#3f3f46]']"
+                        @click="activeId = sec.id"
+                        :class="['p-2 rounded cursor-pointer flex items-center gap-2 group transition text-sm relative', activeId === sec.id ? 'bg-[#27272a] border border-blue-500/50 text-white' : 'text-gray-400 border border-transparent hover:bg-[#18181b]']"
                         :data-id="sec.id">
-                        
-                        <div class="flex items-center gap-3 overflow-hidden">
-                            <i class="fa-solid fa-grip-vertical drag-handle hover:text-white"></i>
-                            <div class="truncate">
-                                <div class="text-sm font-medium text-gray-200 truncate">{{ sec.title || 'Untitled' }}</div>
-                                <div class="text-[10px] text-gray-500 font-mono uppercase">{{ sec.type }}</div>
-                            </div>
-                        </div>
-                        <button @click.stop="deleteSection(idx)" class="btn-ghost opacity-0 group-hover:opacity-100 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <i class="fa-solid fa-grip-vertical drag-handle opacity-50 hover:opacity-100"></i>
+                        <span class="truncate flex-1">{{ sec.title }}</span>
+                        <span class="text-[9px] uppercase font-mono opacity-50">{{ sec.type }}</span>
+                        <button @click.stop="delSec(idx)" class="opacity-0 group-hover:opacity-100 hover:text-red-400 px-1"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             </aside>
 
             <!-- Main Editor -->
-            <main class="flex-1 overflow-y-auto bg-[#09090b] p-8 lg:p-12">
-                <div class="max-w-4xl mx-auto">
+            <main v-if="activeSection || activeId === 'meta'" class="flex-1 overflow-y-auto p-8 bg-[#09090b]">
+                <div class="max-w-3xl mx-auto space-y-6">
                     
-                    <!-- Global Settings -->
-                    <div v-if="activeSection === 'meta'" class="space-y-6 animate-fade-in">
-                        <h2 class="text-2xl font-bold text-white mb-6">Course Settings</h2>
-                        <div class="panel p-6 space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Course Title</label>
-                                    <input v-model="course.meta.title" class="input-dark">
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Subtitle / Term</label>
-                                    <input v-model="course.meta.subtitle" class="input-dark">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Accent Color</label>
-                                <div class="flex gap-2">
-                                    <input type="color" v-model="course.meta.accentColor" class="h-10 w-10 bg-transparent border-none rounded cursor-pointer">
-                                    <input v-model="course.meta.accentColor" class="input-dark font-mono uppercase">
-                                </div>
+                    <!-- Meta Settings -->
+                    <div v-if="activeId === 'meta'" class="panel p-6 space-y-6">
+                        <h2 class="text-xl font-bold">Global Settings</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-xs text-gray-500 uppercase font-bold block mb-1">Title</label><input v-model="course.meta.title" class="input"></div>
+                            <div><label class="text-xs text-gray-500 uppercase font-bold block mb-1">Subtitle</label><input v-model="course.meta.subtitle" class="input"></div>
+                            <div><label class="text-xs text-gray-500 uppercase font-bold block mb-1">Version</label><input v-model="course.meta.version" class="input"></div>
+                            <div><label class="text-xs text-gray-500 uppercase font-bold block mb-1">Accent</label>
+                                <div class="flex gap-2"><input type="color" v-model="course.meta.accentColor" class="h-9 w-9 bg-transparent rounded border border-[#27272a]"><input v-model="course.meta.accentColor" class="input font-mono"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Section Editors -->
-                    <div v-else-if="currentSection" class="space-y-6 animate-fade-in pb-24">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-white">{{ currentSection.title }}</h2>
-                            <span class="text-xs font-mono bg-[#18181b] border border-[#27272a] px-2 py-1 rounded text-gray-500 uppercase">{{ currentSection.type }} Section</span>
+                    <!-- Section Common -->
+                    <div v-else class="space-y-6">
+                        <div class="flex items-center justify-between">
+                             <input v-model="activeSection.title" class="text-2xl font-bold bg-transparent border-none outline-none text-white placeholder-gray-600 w-full" placeholder="Section Title">
+                             <span class="text-xs bg-[#27272a] px-2 py-1 rounded text-gray-500 uppercase font-mono">{{ activeSection.type }}</span>
                         </div>
 
-                        <div class="panel p-6 mb-6">
-                            <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Section Title</label>
-                            <input v-model="currentSection.title" class="input-dark text-lg font-bold">
+                        <!-- Type: TEXT -->
+                        <div v-if="activeSection.type === 'text'" class="panel p-0 flex flex-col h-[60vh] overflow-hidden">
+                            <div class="bg-[#27272a] p-2 px-4 text-xs font-bold text-gray-400 border-b border-[#3f3f46] flex justify-between">
+                                <span>MARKDOWN EDITOR</span>
+                                <i class="fa-brands fa-markdown text-lg"></i>
+                            </div>
+                            <textarea v-model="activeSection.content" class="flex-1 bg-[#09090b] text-gray-300 p-4 font-mono text-sm outline-none resize-none leading-relaxed"></textarea>
                         </div>
 
-                        <!-- TEXT -->
-                        <div v-if="currentSection.type === 'text'" class="panel p-6 flex flex-col h-[60vh]">
-                            <label class="text-xs font-bold text-gray-500 uppercase mb-2 block flex justify-between">
-                                <span>Markdown Content</span>
-                                <i class="fa-brands fa-markdown text-xl opacity-50"></i>
-                            </label>
-                            <textarea v-model="currentSection.content" class="input-dark flex-1 font-mono text-sm resize-none p-4 leading-relaxed" placeholder="# Header..."></textarea>
-                        </div>
-
-                        <!-- MODULE -->
-                        <div v-if="currentSection.type === 'module'" class="space-y-4">
-                            <div class="panel p-6 overflow-hidden">
+                        <!-- Type: MODULE -->
+                        <div v-if="activeSection.type === 'module'" class="space-y-4">
+                            <div class="panel p-4 bg-[#121212]">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-sm font-bold text-gray-400 uppercase">Module Content</h3>
+                                    <span class="text-xs font-bold text-gray-500 uppercase">Items</span>
                                     <div class="flex gap-2">
-                                        <button @click="addItem(currentSection, 'video')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] px-3 py-1.5 rounded transition text-white">+ Video</button>
-                                        <button @click="addItem(currentSection, 'resource')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] px-3 py-1.5 rounded transition text-white">+ File</button>
-                                        <button @click="addItem(currentSection, 'quiz')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] px-3 py-1.5 rounded transition text-white">+ Quiz</button>
+                                        <button @click="addModItem(activeSection, 'video')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] text-white px-2 py-1 rounded">+ Video</button>
+                                        <button @click="addModItem(activeSection, 'pdf')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] text-white px-2 py-1 rounded">+ PDF</button>
+                                        <button @click="addModItem(activeSection, 'md')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] text-white px-2 py-1 rounded">+ Doc</button>
+                                        <button @click="addModItem(activeSection, 'quiz')" class="text-xs bg-[#27272a] hover:bg-[#3f3f46] text-white px-2 py-1 rounded">+ Quiz</button>
                                     </div>
                                 </div>
-
                                 <div class="space-y-2">
-                                    <div v-for="(item, idx) in currentSection.items" :key="idx" class="flex items-center gap-3 bg-[#18181b] p-3 rounded-lg border border-[#27272a] group">
-                                         <div v-if="item.type === 'video'" class="w-8 h-8 rounded bg-red-900/20 text-red-500 flex items-center justify-center"><i class="fa-brands fa-youtube"></i></div>
-                                         <div v-else-if="item.type === 'resource'" class="w-8 h-8 rounded bg-green-900/20 text-green-500 flex items-center justify-center"><i class="fa-solid fa-file"></i></div>
-                                         <div v-else class="w-8 h-8 rounded bg-orange-900/20 text-orange-500 flex items-center justify-center"><i class="fa-solid fa-list-check"></i></div>
-                                         
-                                         <div class="flex-1 grid gap-1">
-                                             <input v-model="item.title" class="bg-transparent text-sm font-bold text-white outline-none placeholder-gray-600" placeholder="Item Title">
-                                             <input v-model="item.url" class="bg-transparent text-xs font-mono text-gray-500 outline-none placeholder-gray-700 w-full" placeholder="URL / Link">
-                                         </div>
-                                         <button @click="currentSection.items.splice(idx, 1)" class="btn-ghost text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                                    <div v-for="(item, idx) in activeSection.items" :key="idx" class="panel p-3 bg-[#18181b] group">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold" :class="getTypeColor(item.type)">
+                                                <i :class="getTypeIcon(item.type)"></i>
+                                            </div>
+                                            <input v-model="item.title" class="bg-transparent border-none text-sm font-bold text-white w-full outline-none" placeholder="Item Title">
+                                            <button @click="activeSection.items.splice(idx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                                        </div>
+                                        
+                                        <!-- Resource Editor -->
+                                        <div v-if="item.type !== 'quiz'" class="pl-9 space-y-2">
+                                            <div class="flex gap-2">
+                                                <input v-model="item.url" class="input text-xs font-mono text-gray-400" placeholder="URL or Path (assets/...)">
+                                                <!-- Fake Upload -->
+                                                <label class="btn btn-secondary text-xs whitespace-nowrap relative cursor-pointer">
+                                                    <i class="fa-solid fa-upload"></i> Upload
+                                                    <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => fakeUpload(e, item)">
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Quiz Editor -->
+                                        <div v-if="item.type === 'quiz'" class="pl-9 mt-2 pt-2 border-t border-[#27272a]">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-[10px] uppercase font-bold text-gray-500">Questions</span>
+                                                <button @click="addQuizQ(item)" class="text-[10px] text-blue-400 hover:text-blue-300">+ Add Question</button>
+                                            </div>
+                                            <div v-for="(q, qIdx) in item.questions" :key="qIdx" class="bg-[#09090b] p-3 rounded border border-[#27272a] mb-2">
+                                                <div class="flex gap-2 mb-2">
+                                                    <select v-model="q.type" class="bg-[#18181b] text-xs border border-[#27272a] rounded px-1 text-gray-400 outline-none">
+                                                        <option value="mcq">MCQ</option>
+                                                        <option value="msq">MSQ</option>
+                                                        <option value="boolean">Boolean</option>
+                                                        <option value="numeric">Numeric</option>
+                                                    </select>
+                                                    <input v-model="q.text" class="bg-transparent border-b border-[#27272a] text-xs w-full outline-none placeholder-gray-600" placeholder="Question Text (Markdown/HTML supported)">
+                                                    <button @click="item.questions.splice(qIdx, 1)" class="text-gray-600 hover:text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                                
+                                                <!-- Options -->
+                                                <div v-if="q.type === 'mcq' || q.type === 'msq'" class="pl-4 space-y-1">
+                                                    <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex gap-2 items-center">
+                                                        <i class="fa-regular fa-circle text-[8px] text-gray-600"></i>
+                                                        <input v-model="q.options[oIdx]" class="bg-transparent text-xs text-gray-400 w-full outline-none" placeholder="Option Text">
+                                                        <button @click="q.options.splice(oIdx, 1)" class="text-gray-700 hover:text-gray-500 text-[10px]"><i class="fa-solid fa-xmark"></i></button>
+                                                    </div>
+                                                    <button @click="q.options.push('')" class="text-[10px] text-gray-600 hover:text-gray-400 ml-4">+ Add Option</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Type: COMPILER -->
+                        <div v-if="activeSection.type === 'compiler'" class="panel p-6">
+                            <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Configuration</label>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div><label class="text-[10px] text-gray-500 block">Language</label>
+                                    <select v-model="activeSection.language" class="input"><option value="python">Python</option><option value="javascript">JavaScript</option></select>
+                                </div>
+                            </div>
+                            <label class="text-[10px] text-gray-500 block mb-1">Starter Code</label>
+                            <textarea v-model="activeSection.starterCode" class="input h-32 font-mono text-xs"></textarea>
                         </div>
                         
-                        <!-- COMPILER -->
-                        <div v-if="currentSection.type === 'compiler'" class="panel p-6">
-                            <div class="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Language</label>
-                                    <select v-model="currentSection.language" class="input-dark">
-                                        <option value="python">Python</option>
-                                        <option value="javascript">JavaScript</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Starter Code</label>
-                                    <textarea v-model="currentSection.starterCode" class="input-dark h-32 font-mono text-xs"></textarea>
-                                </div>
+                         <!-- Type: FAQ -->
+                        <div v-if="activeSection.type === 'faq'" class="panel p-4">
+                            <button @click="activeSection.questions.push({q:'', a:''})" class="btn btn-secondary text-xs mb-4 w-full justify-center">+ Add Q&A</button>
+                            <div v-for="(qa, idx) in activeSection.questions" :key="idx" class="mb-4 space-y-2 border-b border-[#27272a] pb-4">
+                                <input v-model="qa.q" class="input font-bold" placeholder="Question">
+                                <textarea v-model="qa.a" class="input h-20" placeholder="Answer"></textarea>
+                                <button @click="activeSection.questions.splice(idx, 1)" class="text-xs text-red-500">Delete</button>
                             </div>
                         </div>
 
                     </div>
                     
-                    <div v-else class="text-center py-24 text-gray-600">
-                        <p>Select a section to edit.</p>
-                    </div>
-
                 </div>
             </main>
+            <div v-else class="flex-1 flex items-center justify-center text-gray-600 flex-col">
+                <i class="fa-solid fa-cubes-stacked text-3xl mb-2 opacity-20"></i>
+                <p class="text-sm">Select a section to begin</p>
+            </div>
         </div>
     </div>
 
-    <!-- Script Imports -->
     <script type="module">
         import { createApp } from 'vue';
         import { loadCourse, exportCourse } from './src/services/course_data.js';
@@ -218,73 +241,85 @@
             data() {
                 return {
                     course: { meta: {}, sections: [] },
-                    activeSection: 'meta',
+                    activeId: 'meta',
                     showAddMenu: false,
-                    unsavedChanges: false
+                    hasUnsaved: false
                 }
             },
             computed: {
-                currentSection() {
-                    return this.course.sections.find(s => s.id === this.activeSection);
-                }
+                activeSection() { return this.course.sections.find(s => s.id === this.activeId); }
             },
             watch: {
-                course: {
-                    handler() { this.unsavedChanges = true; },
-                    deep: true
-                }
+                course: { handler() { this.hasUnsaved = true; }, deep: true }
             },
             async mounted() {
                 this.course = await loadCourse();
-                
                 this.$nextTick(() => {
-                    const el = this.$refs.sortableList;
-                    if(el) {
-                        new Sortable(el, {
+                    if(this.$refs.sortList) {
+                        new Sortable(this.$refs.sortList, {
                             handle: '.drag-handle',
                             animation: 150,
                             onEnd: (evt) => {
-                                const item = this.course.sections.splice(evt.oldIndex, 1)[0]; 
+                                const item = this.course.sections.splice(evt.oldIndex, 1)[0];
                                 this.course.sections.splice(evt.newIndex, 0, item);
-                                this.unsavedChanges = true;
                             }
                         });
                     }
+                    this.hasUnsaved = false;
                 });
-                
-                this.$nextTick(() => this.unsavedChanges = false);
             },
             methods: {
-                saveData() {
-                    exportCourse(this.course);
-                    this.unsavedChanges = false;
-                },
-                addSection(type) {
-                    const newIds = 'sec_' + Date.now();
-                    const newSec = {
-                        id: newIds,
-                        type,
-                        title: 'New ' + type.charAt(0).toUpperCase() + type.slice(1),
-                    };
-                    
-                    if(type === 'text') newSec.content = '# New Info';
-                    if(type === 'module') newSec.items = [];
-                    if(type === 'compiler') { newSec.language = 'python'; newSec.starterCode = 'print("Hello World")'; }
-                    
-                    this.course.sections.push(newSec);
-                    this.activeSection = newIds;
+                save() { exportCourse(this.course); this.hasUnsaved = false; },
+                addSec(type) {
+                    const id = 'sec_' + Date.now();
+                    const sec = { id, type, title: 'New Section' };
+                    if(type === 'text') sec.content = '';
+                    if(type === 'module') sec.items = [];
+                    if(type === 'compiler') { sec.language = 'python'; sec.starterCode = ''; }
+                    if(type === 'faq') sec.questions = [];
+                    this.course.sections.push(sec);
+                    this.activeId = id;
                     this.showAddMenu = false;
                 },
-                deleteSection(idx) {
-                    if(confirm("Delete this section?")) {
+                delSec(idx) {
+                    if(confirm("Delete?")) {
                         const id = this.course.sections[idx].id;
                         this.course.sections.splice(idx, 1);
-                        if(this.activeSection === id) this.activeSection = 'meta';
+                        if(this.activeId === id) this.activeId = 'meta';
                     }
                 },
-                addItem(sec, type) {
+                addModItem(sec, type) {
                     if(!sec.items) sec.items = [];
-                    sec.items.push({ type, title: 'New Item', url: '' });
+                    // Generic Item Structure
+                    const item = { type, title: 'New Item', url: '' };
+                    if(type === 'quiz') item.questions = [];
+                    sec.items.push(item);
+                },
+                addQuizQ(item) {
+                    if(!item.questions) item.questions = [];
+                    item.questions.push({ type: 'mcq', text: 'New Question?', options: ['Option 1', 'Option 2'] });
+                },
+                fakeUpload(e, item) {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    // Auto-guess path
+                    let prefix = 'assets/';
+                    if(file.type.includes('image')) prefix += 'imgs/';
+                    else if(file.type.includes('pdf')) prefix += 'pdf/';
+                    else if(file.type.includes('video')) prefix += 'videos/';
+                    
+                    item.url = prefix + file.name;
+                    alert(`Selected: ${file.name}\n\nIMPORTANT: Please manually move this file to:\n${prefix}`);
+                },
+                getTypeIcon(t) {
+                    const map = { video: 'fa-youtube', pdf: 'fa-file-pdf', md: 'fa-file-code', quiz: 'fa-list-check' };
+                    return 'fa-brands ' + (map[t] || 'fa-solid ' + map[t] || 'fa-circle');
+                },
+                getTypeColor(t) {
+                    if(t==='video') return 'bg-red-900/30 text-red-500';
+                    if(t==='pdf') return 'bg-orange-900/30 text-orange-500';
+                    if(t==='quiz') return 'bg-green-900/30 text-green-500';
+                    return 'bg-blue-900/30 text-blue-500';
                 }
             }
         }).mount('#app');

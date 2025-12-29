@@ -8,76 +8,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- MathJax for LaTeX -->
-    <script type="text/javascript" id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
-    
-    <!-- Python Support -->
+    <!-- MathJax -->
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
     
     <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #ffffff; color: #333; overflow: hidden; }
+        body { font-family: 'Roboto', sans-serif; background-color: #f8fafc; color: #333; overflow: hidden; }
+        :root { --sidebar-w: 280px; --icon-bar-w: 64px; --header-h: 60px; --primary: #7f1d1d; }
         
-        /* Layout Variables */
-        :root { 
-            --sidebar-w: 280px; 
-            --icon-bar-w: 70px; 
-            --header-h: 60px;
-            --primary: #800000; /* IITM Red/Maroon */
-        }
-
-        /* Top Bar */
-        .top-bar { height: var(--header-h); background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; px-4; z-index: 50; }
-        .logo-area { display: flex; align-items: center; gap: 1rem; padding-left: 1rem; }
-        .course-badge { background: #f5f5f5; padding: 4px 12px; border-radius: 4px; font-weight: 500; font-size: 0.85rem; color: #555; }
+        .top-bar { height: var(--header-h); background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; px-4; z-index: 50; }
+        .icon-bar { width: var(--icon-bar-w); background: #1e293b; height: calc(100vh - var(--header-h)); display: flex; flex-direction: column; align-items: center; padding-top: 1rem; color: #94a3b8; }
+        .icon-item { padding: 12px; cursor: pointer; transition: 0.2s; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; }
+        .icon-item:hover, .icon-item.active { color: white; background: #334155; }
         
-        /* Icon Sidebar */
-        .icon-sidebar { width: var(--icon-bar-w); background: #373e4a; height: calc(100vh - var(--header-h)); display: flex; flex-direction: column; align-items: center; padding-top: 1rem; color: #a0aec0; z-index: 40; }
-        .icon-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 12px 0; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
-        .icon-nav-item:hover { color: white; background: #2d333b; }
-        .icon-nav-item.active { border-left-color: #fca5a5; background: #2d333b; color: white; }
-        .icon-nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
-        .icon-nav-item span { font-size: 0.65rem; }
-
-        /* Content Sidebar */
-        .content-sidebar { width: var(--sidebar-w); background: #fff; border-right: 1px solid #e0e0e0; height: calc(100vh - var(--header-h)); display: flex; flex-direction: column; overflow-y: auto; z-index: 30; }
-        .sidebar-section { border-bottom: 1px solid #f0f0f0; }
-        .sidebar-header { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 500; font-size: 0.9rem; color: #444; }
-        .sidebar-header:hover { background: #f9f9f9; }
-        .sidebar-header.active { color: var(--primary); background: #fff5f5; border-left: 3px solid var(--primary); }
+        .nav-sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid #e2e8f0; height: calc(100vh - var(--header-h)); overflow-y: auto; }
+        .nav-item { padding: 10px 16px; cursor: pointer; font-size: 0.9rem; border-left: 3px solid transparent; }
+        .nav-item:hover { background: #f1f5f9; }
+        .nav-item.active { background: #fef2f2; border-left-color: var(--primary); color: var(--primary); font-weight: 500; }
+        .nav-group-header { padding: 12px 16px; font-weight: 600; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #475569; }
+        .nav-group-header:hover { color: #1e293b; }
         
-        .sidebar-content { background: #fbfbfb; display: none; }
-        .sidebar-content.open { display: block; }
+        .main-content { flex: 1; height: calc(100vh - var(--header-h)); overflow-y: auto; background: white; position: relative; }
+        .content-container { max-width: 900px; margin: 0 auto; padding: 40px; }
         
-        .nav-item { padding: 10px 16px 10px 24px; font-size: 0.85rem; color: #666; cursor: pointer; display: flex; items-center; gap: 10px; border-left: 3px solid transparent; }
-        .nav-item:hover { color: #000; background: #eee; }
-        .nav-item.active { color: var(--primary); font-weight: 500; background: #fff0f0; border-left-color: var(--primary); }
-        .nav-item i { font-size: 0.8rem; width: 16px; text-align: center; }
-
-        /* Main Content */
-        .main-stage { flex: 1; height: calc(100vh - var(--header-h)); overflow-y: auto; background: white; padding: 0; position: relative; }
-        .content-container { max-width: 1000px; margin: 0 auto; padding: 40px; }
+        /* Typography */
+        .prose h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #1e293b; }
+        .prose h2 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+        .prose p { margin-bottom: 1rem; line-height: 1.7; color: #475569; }
+        .prose a { color: var(--primary); text-decoration: underline; }
+        .prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
         
-        /* Video Player */
-        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; background: black; border-radius: 8px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-        /* Quiz Styles */
-        .quiz-container { background: white; border: 1px solid #e0e0e0; border-radius: 4px; padding: 24px; margin-bottom: 1rem; }
-        .question-block { margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
-        .q-header { font-weight: 500; margin-bottom: 1rem; display: flex; gap: 0.5rem; }
-        .option-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; align-items: flex-start; }
-        .option-row input { margin-top: 4px; accent-color: var(--primary); }
-        .option-label { font-size: 0.95rem; color: #444; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        /* Quiz */
+        .quiz-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
     </style>
-    
-    <script type="importmap">
+     <script type="importmap">
         {
             "imports": {
                 "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
@@ -90,172 +55,143 @@
     <div id="app" class="flex flex-col h-screen">
         
         <!-- Header -->
-        <header class="top-bar shrink-0">
-            <div class="logo-area">
-                <div class="w-8 h-8 rounded-full bg-yellow-600/20 flex items-center justify-center">
-                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/69/IIT_Madras_Logo.svg/1200px-IIT_Madras_Logo.svg.png" class="h-6 w-auto" alt="IITM">
-                </div>
-                <div>
-                     <div class="font-bold text-lg leading-tight text-[#800000]">IIT Madras</div>
-                     <div class="text-[10px] text-gray-500 uppercase tracking-wide">Degree Program</div>
-                </div>
-                <div class="h-6 w-[1px] bg-gray-300 mx-2"></div>
-                <span class="course-badge">{{ course.meta.subtitle || 'Course Portal' }}</span>
-                <span class="font-medium text-sm">{{ course.meta.title || 'Loading...' }}</span>
+        <header class="top-bar shrink-0 shadow-sm">
+            <div class="flex items-center gap-4 pl-2">
+                 <div class="w-8 h-8 rounded bg-red-900 text-white flex items-center justify-center font-bold">U</div>
+                 <div>
+                     <h1 class="font-bold text-gray-900 leading-tight">{{ course.meta.title }}</h1>
+                     <p class="text-xs text-gray-500">{{ course.meta.subtitle }}</p>
+                 </div>
             </div>
-            
-            <div class="flex items-center gap-6 pr-6 text-gray-600">
-                <i class="fa-regular fa-comment hover:text-black cursor-pointer"></i>
-                <i class="fa-regular fa-bell hover:text-black cursor-pointer"></i>
-                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-700 cursor-pointer">
-                    <i class="fa-regular fa-user"></i>
-                </div>
+            <div class="flex gap-4 pr-4">
+                <button class="text-gray-500 hover:text-gray-900"><i class="fa-regular fa-user"></i></button>
             </div>
         </header>
 
         <div class="flex flex-1 overflow-hidden">
-            
             <!-- Icon Sidebar -->
-            <nav class="icon-sidebar shrink-0">
-                <div class="icon-nav-item active">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Modules</span>
-                </div>
-                <div class="icon-nav-item">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <span>Grades</span>
-                </div>
-                <div class="icon-nav-item">
-                    <i class="fa-solid fa-calculator"></i>
-                    <span>Calc</span>
-                </div>
-                <div class="mt-auto mb-4 icon-nav-item">
-                     <i class="fa-solid fa-circle-question"></i>
-                     <span>Support</span>
+            <div class="icon-bar shrink-0">
+                <div class="icon-item active"><i class="fa-solid fa-layer-group text-xl"></i><span>Content</span></div>
+                <div class="icon-item"><i class="fa-solid fa-chart-pie text-xl"></i><span>Grades</span></div>
+                <div class="icon-item"><i class="fa-solid fa-message text-xl"></i><span>Discuss</span></div>
+            </div>
+
+            <!-- Nav Sidebar -->
+            <nav class="nav-sidebar shrink-0">
+                <div v-for="sec in course.sections" :key="sec.id">
+                    <div @click="toggleSec(sec)" class="nav-group-header">
+                        <span class="truncate">{{ sec.title }}</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition" :class="{ '-rotate-90': !sec.isOpen }"></i>
+                    </div>
+                    
+                    <div v-if="sec.isOpen" class="bg-gray-50/50 pb-2">
+                         <!-- If Generic Section (Text/Calendar/Compiler) -->
+                         <div v-if="['text','compiler','calendar','faq'].includes(sec.type)" 
+                              @click="select(sec, null)" 
+                              :class="['nav-item flex items-center gap-2', (activeSec === sec && !activeItem) ? 'active' : '']">
+                              <i :class="getIcon(sec.type)"></i>
+                              <span>Overview</span>
+                         </div>
+                         
+                         <!-- If Module -->
+                         <div v-if="sec.items">
+                             <div v-for="(item, idx) in sec.items" :key="idx"
+                                  @click="select(sec, item)"
+                                  :class="['nav-item pl-8 flex items-center gap-2', activeItem === item ? 'active' : '']">
+                                  <i :class="getIcon(item.type)"></i>
+                                  <span class="truncate text-sm">{{ item.title }}</span>
+                             </div>
+                         </div>
+                    </div>
                 </div>
             </nav>
 
-            <!-- Course Modules Sidebar -->
-            <aside class="content-sidebar shrink-0">
-                <div v-for="(sec, idx) in course.sections" :key="sec.id">
-                    
-                    <!-- Section Header -->
-                    <div @click="toggleSection(sec)" :class="['sidebar-header select-none', sec.isOpen ? 'active' : '']">
-                        <div class="flex items-center gap-3">
-                            <i :class="['fa-solid text-gray-400 text-xs', sec.isOpen ? 'fa-circle-dot text-red-800' : 'fa-circle']"></i>
-                            <span class="truncate w-48">{{ sec.title }}</span>
-                        </div>
-                        <i :class="['fa-solid fa-chevron-down text-xs transition', sec.isOpen ? 'rotate-180' : '']"></i>
-                    </div>
-
-                    <!-- Items List -->
-                    <div :class="['sidebar-content', sec.isOpen ? 'open' : '']">
-                        <!-- If it's a module with items -->
-                        <div v-if="sec.items">
-                            <div v-for="(item, iIdx) in sec.items" :key="iIdx" 
-                                @click="selectItem(item, sec)"
-                                :class="['nav-item', activeItem === item ? 'active' : '']">
-                                
-                                <i v-if="item.type === 'video'" class="fa-regular fa-circle-play"></i>
-                                <i v-else-if="item.type === 'quiz'" class="fa-regular fa-clock"></i>
-                                <i v-else class="fa-regular fa-file"></i>
-                                
-                                <div class="flex flex-col">
-                                    <span class="truncate w-40 leading-tight">{{ item.title }}</span>
-                                    <span class="text-[10px] text-gray-400 capitalize">{{ item.type }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- If it's a generic section (text/compiler) -->
-                        <div v-else @click="selectSectionContent(sec)" :class="['nav-item', activeItem === sec ? 'active' : '']">
-                             <i class="fa-regular fa-file-lines"></i>
-                             <span>View Content</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Main Content Stage -->
-            <main class="main-stage">
-                
-                <!-- BREADCRUMB -->
-                <div class="sticky top-0 bg-white border-b border-gray-100 px-10 py-4 flex items-center justify-between z-10">
-                    <div>
-                        <h2 class="text-xl font-bold text-[#800000]">{{ activeTitle }}</h2>
-                        <div class="text-xs text-gray-500 mt-1 flex gap-2">
-                             <span>{{ course.meta.title }}</span> <i class="fa-solid fa-chevron-right text-[8px] pt-1"></i> <span>{{ activeSubtitle }}</span>
-                        </div>
-                    </div>
-                    <div v-if="activeItemType === 'compiler'" class="flex gap-2">
-                         <select v-model="compilerLang" class="border rounded px-2 text-sm">
-                             <option value="python">Python</option>
-                             <option value="javascript">JavaScript</option>
-                         </select>
-                         <button @click="runCode" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-green-700">
-                             <i class="fa-solid fa-play mr-1"></i> Run
-                        </button>
-                    </div>
-                </div>
-
+            <!-- Main Stage -->
+            <main class="main-content">
                 <div class="content-container">
                     
-                    <!-- VIDEO VIEW -->
-                    <div v-if="activeItemType === 'video'" class="animate-fade-in">
-                        <div v-if="activeItem.url" class="video-wrapper">
-                             <iframe :src="getEmbedUrl(activeItem.url)" frameborder="0" allowfullscreen></iframe>
-                        </div>
-                        <div class="mt-6">
-                            <h3 class="font-bold text-lg mb-2">Description</h3>
-                            <p class="text-gray-600 text-sm leading-relaxed">Video lecture content for {{ activeItem.title }}.</p>
-                        </div>
+                    <!-- BREADCRUMB -->
+                    <div class="mb-6 flex items-center gap-2 text-sm text-gray-500">
+                        <span>{{ activeSec ? activeSec.title : 'Home' }}</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        <span class="font-bold text-gray-800">{{ activeItem ? activeItem.title : 'Overview' }}</span>
                     </div>
 
-                    <!-- QUIZ VIEW -->
-                    <div v-else-if="activeItemType === 'quiz'" class="animate-fade-in">
-                        <div class="quiz-container">
-                            <div class="text-sm text-gray-600 mb-6 italic border-l-4 border-yellow-400 pl-4 py-2 bg-yellow-50">
-                                This assignment is not graded and is only for practice.
-                            </div>
+                    <!-- 1. TEXT / MD CONTENT -->
+                    <div v-if="currentViewType === 'text'" class="animate-fade-in">
+                         <div class="prose max-w-none" v-html="renderMd(currentContent)"></div>
+                    </div>
 
-                            <div v-if="activeItem.questions && activeItem.questions.length">
-                                <div v-for="(q, qIdx) in activeItem.questions" :key="qIdx" class="question-block">
-                                    <div class="q-header">
-                                        <span>{{ qIdx + 1 }})</span>
-                                        <div class="prose prose-sm max-w-none text-gray-800" v-html="renderMd(q.text)"></div>
-                                    </div>
-                                    
-                                    <div class="pl-6 space-y-2">
-                                        <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="option-row">
-                                            <input :type="q.type === 'msq' ? 'checkbox' : 'radio'" :name="'q'+qIdx" :id="'q'+qIdx+'o'+oIdx">
-                                            <label :for="'q'+qIdx+'o'+oIdx" class="option-label" v-html="renderMd(opt)"></label>
-                                        </div>
-                                    </div>
+                    <!-- 2. VIDEO PLAYER -->
+                    <div v-else-if="currentViewType === 'video'" class="animate-fade-in">
+                        <div class="aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-6">
+                            <!-- Local Video if path contains dot, else YouTube Embed -->
+                            <video v-if="isLocalMedia(activeItem.url)" :src="activeItem.url" controls class="w-full h-full"></video>
+                            <iframe v-else :src="getEmbedUrl(activeItem.url)" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                         <h2 class="text-2xl font-bold mb-2">{{ activeItem.title }}</h2>
+                         <p class="text-gray-600">Video source: {{ activeItem.url }}</p>
+                    </div>
+
+                    <!-- 3. PDF VIEWER -->
+                    <div v-else-if="currentViewType === 'pdf'" class="animate-fade-in h-[80vh]">
+                         <object :data="activeItem.url" type="application/pdf" class="w-full h-full rounded-lg border border-gray-200">
+                             <p>Your browser does not support PDFs. <a :href="activeItem.url">Download</a></p>
+                         </object>
+                    </div>
+
+                    <!-- 4. QUIZ ENGINE -->
+                    <div v-else-if="currentViewType === 'quiz'" class="animate-fade-in max-w-3xl">
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-blue-700">
+                            <strong>Practice Quiz:</strong> This assessment is for self-evaluation.
+                        </div>
+                        
+                        <div v-if="activeItem.questions && activeItem.questions.length">
+                            <div v-for="(q, qIdx) in activeItem.questions" :key="qIdx" class="quiz-card group">
+                                <div class="flex gap-2 mb-4">
+                                    <span class="font-bold text-gray-400 select-none">Q{{ qIdx + 1 }}.</span>
+                                    <div class="prose prose-sm" v-html="renderMd(q.text)"></div>
                                 </div>
-                                <button class="bg-[#800000] text-white px-6 py-2 rounded font-medium text-sm hover:bg-[#600000]">Submit Answers</button>
+                                
+                                <!-- MCQ / MSQ -->
+                                <div v-if="q.type === 'mcq' || q.type === 'msq'" class="space-y-2 pl-8">
+                                    <label v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex items-start gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer transition border border-transparent hover:border-gray-200">
+                                        <input :type="q.type === 'msq' ? 'checkbox' : 'radio'" :name="'q'+qIdx" class="mt-1.5 accent-red-700">
+                                        <div class="text-sm text-gray-700 pt-0.5" v-html="renderMd(opt)"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Boolean -->
+                                <div v-if="q.type === 'boolean'" class="flex gap-4 pl-8">
+                                    <label class="btn border px-4 py-2 rounded flex gap-2"><input type="radio" :name="'q'+qIdx" value="true"> True</label>
+                                    <label class="btn border px-4 py-2 rounded flex gap-2"><input type="radio" :name="'q'+qIdx" value="false"> False</label>
+                                </div>
+                                
+                                <!-- Numeric -->
+                                <div v-if="q.type === 'numeric'" class="pl-8">
+                                    <input type="number" class="border p-2 rounded w-48 bg-gray-50" placeholder="Enter answer...">
+                                </div>
+
                             </div>
-                            <div v-else class="text-center text-gray-500 py-10">No questions in this quiz.</div>
+                            <button class="bg-red-800 text-white px-8 py-3 rounded-lg font-bold hover:bg-red-900 shadow-lg">Submit Assignment</button>
                         </div>
+                        <div v-else class="text-center py-12 text-gray-400">No questions in this quiz.</div>
                     </div>
 
-                    <!-- COMPILER VIEW -->
-                    <div v-else-if="activeItemType === 'compiler'" class="animate-fade-in h-[70vh] flex flex-col">
-                        <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col flex-1 shadow-sm">
-                            <div class="bg-gray-50 border-b border-gray-200 p-2 text-xs font-mono text-gray-500">
-                                main.{{ compilerLang === 'python' ? 'py' : 'js' }}
-                            </div>
-                            <textarea v-model="code" class="flex-1 p-4 font-mono text-sm outline-none resize-none bg-white text-gray-800" spellcheck="false"></textarea>
-                            <div class="h-32 bg-[#1e1e1e] text-green-400 p-4 font-mono text-sm border-t border-gray-200 overflow-y-auto">
-                                <div v-if="output">{{ output }}</div>
-                                <div v-if="error" class="text-red-400">{{ error }}</div>
-                                <div v-if="!output && !error" class="text-gray-600 opacity-50">// Output terminal</div>
-                            </div>
+                    <!-- 5. COMPILER -->
+                    <div v-else-if="currentViewType === 'compiler'" class="content-full h-[70vh] flex flex-col border border-gray-300 rounded-lg overflow-hidden">
+                        <div class="bg-gray-100 p-2 flex justify-between items-center border-b border-gray-300">
+                            <span class="text-xs font-mono text-gray-600">Ref: {{ activeSec.id }} // {{ activeSec.language }}</span>
+                            <button @click="runCode" class="bg-green-600 text-white px-4 py-1 rounded text-xs font-bold flex items-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-play"></i> Run Code
+                            </button>
                         </div>
-                    </div>
-
-                    <!-- MARKDOWN CONTENT (Default) -->
-                    <div v-else class="animate-fade-in">
-                         <div class="prose max-w-none" v-html="renderMd(activeContent)"></div>
+                        <textarea v-model="compilerCode" class="flex-1 bg-[#1e1e1e] text-gray-100 p-4 font-mono text-sm leading-relaxed resize-none outline-none"></textarea>
+                        <div class="h-32 bg-black text-green-400 p-4 font-mono text-xs overflow-y-auto">
+                            <div v-if="compilerOut">{{ compilerOut }}</div>
+                            <div v-if="compilerErr" class="text-red-400">{{ compilerErr }}</div>
+                            <div v-if="!compilerOut && !compilerErr" class="text-gray-600 italic">// Output ready</div>
+                        </div>
                     </div>
 
                 </div>
@@ -263,101 +199,102 @@
         </div>
     </div>
 
-    <!-- Logic -->
     <script type="module">
         import { createApp } from 'vue';
-        import { loadCourse } from './src/js/course_data.js';
+        import { loadCourse } from './src/services/course_data.js';
         import { renderMarkdown, configureMarkdown } from './src/services/md.js';
         import { CodeCompiler } from './src/services/compiler.js';
 
-        const compiler = new CodeCompiler();
         configureMarkdown();
+        const compiler = new CodeCompiler();
 
         createApp({
             data() {
                 return {
                     course: { meta: {}, sections: [] },
+                    activeSec: null,
                     activeItem: null,
-                    activeSection: null,
-                    code: '',
-                    compilerLang: 'python',
-                    output: '',
-                    error: ''
+                    compilerCode: '',
+                    compilerOut: '',
+                    compilerErr: ''
                 }
             },
             computed: {
-                activeTitle() {
-                    return this.activeItem?.title || this.activeSection?.title || 'Course Home';
-                },
-                activeSubtitle() {
-                    return this.activeSection?.title || 'Welcome';
-                },
-                activeItemType() {
-                    if(this.activeItem?.type) return this.activeItem.type;
-                    if(this.activeSection?.type === 'compiler') return 'compiler';
+                currentViewType() {
+                    if(this.activeItem) return this.activeItem.type;
+                    if(this.activeSec) {
+                        return this.activeSec.type; 
+                    }
                     return 'text';
                 },
-                activeContent() {
-                    // For generic sections (text/compiler)
-                    if(this.activeSection && !this.activeItem) return this.activeSection.content;
-                    return '';
+                currentContent() {
+                    if(this.activeItem && this.activeItem.type === 'md') return this.activeItem.content || 'Loading...'; 
+                    return this.activeSec ? this.activeSec.content : '';
+                }
+            },
+            watch: {
+                // Fetch MD content if item is 'md' type and has a URL
+                activeItem: {
+                    immediate: true,
+                    async handler(val) {
+                        if(val && val.type === 'md' && val.url && !val.content) {
+                            try {
+                                const res = await fetch(val.url);
+                                if(res.ok) val.content = await res.text();
+                            } catch(e) { console.error(e); }
+                        }
+                        this.refreshMath();
+                    }
+                },
+                currentContent() {
+                    this.refreshMath();
                 }
             },
             async mounted() {
-                // Initialize Data
                 this.course = await loadCourse();
-                
-                // Open first section
                 if(this.course.sections.length > 0) {
-                    const first = this.course.sections[0];
-                    this.toggleSection(first);
-                    
-                    if(first.items && first.items.length > 0) {
-                        this.selectItem(first.items[0], first);
-                    } else {
-                        this.selectSectionContent(first);
-                    }
+                    this.course.sections[0].isOpen = true; // Auto open first
+                    this.select(this.course.sections[0], null);
                 }
-
-                // MathJax typeset helper
-                this.$watch('activeItem', () => {
-                    this.$nextTick(() => {
-                        if(window.MathJax) window.MathJax.typesetPromise();
-                    });
-                });
             },
             methods: {
-                toggleSection(sec) {
-                    sec.isOpen = !sec.isOpen;
+                refreshMath() {
+                    this.$nextTick(() => {
+                       if(window.MathJax) window.MathJax.typesetPromise();
+                    });
                 },
-                selectItem(item, sec) {
-                    this.activeItem = item;
-                    this.activeSection = sec;
-                },
-                selectSectionContent(sec) {
-                    this.activeItem = null;
-                    this.activeSection = sec;
-                    if(sec.type === 'compiler') {
-                        this.code = sec.starterCode || 'print("Hello World")';
-                        this.compilerLang = sec.language || 'python';
-                        compiler.initPython();
+                renderMd(t) { return renderMarkdown(t || ''); },
+                toggleSec(s) { s.isOpen = !s.isOpen; },
+                select(s, i) {
+                    this.activeSec = s;
+                    this.activeItem = i;
+                    if(s.type === 'compiler' && !i) {
+                         this.compilerCode = s.starterCode || '';
+                         compiler.initPython(); // Preload
                     }
                 },
-                renderMd(text) {
-                     return renderMarkdown(text || '');
+                isLocalMedia(url) {
+                    return url && (url.startsWith('./') || url.startsWith('assets/') || !url.includes('http'));
                 },
                 getEmbedUrl(url) {
                     if(!url) return '';
-                    // Simple YouTube ID check
-                    if(!url.includes('http') && url.length === 11) return `https://www.youtube.com/embed/${url}`;
+                    if(url.includes('youtube.com') || url.includes('youtu.be')) {
+                        // Basic parser
+                        const v = url.split('v=')[1] || url.split('/').pop();
+                        return `https://www.youtube.com/embed/${v.split('&')[0]}`;
+                    }
                     return url;
                 },
+                getIcon(type) {
+                    const map = { video: 'fa-circle-play', pdf: 'fa-file-pdf', 'md': 'fa-file-lines', quiz: 'fa-list-check', compiler: 'fa-code', text: 'fa-align-left' };
+                    return 'fa-regular ' + (map[type] || 'fa-file');
+                },
                 async runCode() {
-                    this.output = 'Running...';
-                    this.error = '';
-                    const res = await compiler.run(this.code, this.compilerLang);
-                    this.output = res.output;
-                    this.error = res.error;
+                    this.compilerOut = 'Running...';
+                    this.compilerErr = '';
+                    const r = await compiler.run(this.compilerCode, this.activeSec.language || 'python');
+                    this.compilerOut = r.output;
+                    this.compilerErr = r.error;
                 }
             }
         }).mount('#app');

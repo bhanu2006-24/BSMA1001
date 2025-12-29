@@ -8,7 +8,7 @@ const DEFAULT_COURSE = {
     meta: {
         title: "New Universal Course",
         subtitle: "Course Template",
-        accentColor: "#6366f1",
+        accentColor: "#62e60fff",
         version: "2.0"
     },
     sections: []
