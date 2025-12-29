@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Manager | Student Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Markdown Support -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #050505; color: #e5e5e5; }
+        .glass { background: rgba(30,30,30,0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        .input-base { background: #111; border: 1px solid #222; color: white; padding: 0.5rem; border-radius: 0.5rem; width: 100%; outline: none; transition: 0.2s; }
+        .input-base:focus { border-color: #6366f1; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen p-6 relative overflow-hidden">
+
+    <div id="app" class="flex flex-col h-screen max-w-7xl mx-auto pb-4">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white"><i class="fa-solid fa-graduation-cap text-lg"></i></div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white leading-none">Course Manager</h1>
+                    <p class="text-xs text-indigo-400 font-mono mt-1">Single Source of Truth</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                    <input v-model="search" class="bg-[#111] border border-[#222] rounded-lg pl-8 pr-4 py-2 text-sm text-white focus:border-indigo-500 outline-none w-64" placeholder="Search courses...">
+                </div>
+                <button @click="createCourse" class="bg-[#222] hover:bg-[#333] text-white px-4 py-2 rounded-lg text-sm border border-[#333] transition"><i class="fa-solid fa-plus mr-2"></i>New</button>
+                <button @click="saveFile" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-indigo-900/20 transition"><i class="fa-solid fa-save mr-2"></i>Save All</button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex gap-6 overflow-hidden">
+            <!-- Sidebar List -->
+            <div class="w-1/3 flex flex-col gap-4 overflow-y-auto pr-2">
+                <div v-for="course in filteredCourses" :key="course.id" 
+                    @click="selectCourse(course)"
+                    :class="['p-4 rounded-xl border cursor-pointer transition relative overflow-hidden group', 
+                        selected && selected.id === course.id ? 'bg-indigo-900/10 border-indigo-500/50' : 'bg-[#0a0a0a] border-[#222] hover:border-indigo-500/30']">
+                    
+                    <div class="flex justify-between items-start mb-2 relative z-10">
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#151515] text-gray-400 border border-[#222]">{{ course.code }}</span>
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                             <button @click.stop="deleteCourse(course.id)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-gray-200 group-hover:text-white transition relative z-10">{{ course.name }}</h3>
+                    <p class="text-xs text-gray-500 mt-2 line-clamp-2 relative z-10">{{ course.desc }}</p>
+                    
+                    <!-- Selection Indicator -->
+                    <div v-if="selected && selected.id === course.id" class="absolute inset-0 border-2 border-indigo-500/20 rounded-xl pointer-events-none"></div>
+                </div>
+            </div>
+
+            <!-- Editor Pane -->
+            <div class="w-2/3 glass rounded-2xl p-0 flex flex-col relative overflow-hidden">
+                <div v-if="selected" class="h-full flex flex-col">
+                    <!-- Tabs -->
+                    <div class="flex border-b border-[#222] bg-[#0c0c0c] px-6 pt-4">
+                        <button v-for="tab in tabs" :key="tab" @click="activeTab = tab" 
+                            :class="['px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition', 
+                                activeTab === tab ? 'border-indigo-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300']">
+                            {{ tab }}
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-8 bg-[#080808]">
+                        <!-- General Tab -->
+                        <div v-if="activeTab === 'General'" class="space-y-6 max-w-2xl mx-auto animation-fade-in">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Course Code</label>
+                                    <input v-model="selected.code" class="input-base font-mono text-indigo-400" placeholder="CS101">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Title</label>
+                                    <input v-model="selected.name" class="input-base font-bold" placeholder="Intro to...">
+                                </div>
+                            </div>
+                            
+                            <!-- Description with Markdown Preview -->
+                            <div>
+                                <div class="flex justify-between items-end mb-1">
+                                    <label class="text-xs text-gray-500">Description (Markdown)</label>
+                                    <button @click="showPreview = !showPreview" class="text-[10px] text-indigo-400 hover:underline">{{ showPreview ? 'Edit' : 'Preview' }}</button>
+                                </div>
+                                <textarea v-if="!showPreview" v-model="selected.desc" class="input-base h-32 font-mono text-sm leading-relaxed text-gray-300 resize-y" placeholder="# Course Overview..."></textarea>
+                                <div v-else class="prose prose-invert prose-sm bg-[#111] p-4 rounded-lg border border-[#222] min-h-[8rem]" v-html="renderMd(selected.desc)"></div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Credits</label>
+                                    <input v-model.number="selected.credits" type="number" class="input-base">
+                                </div>
+                                <div class="col-span-2">
+                                     <label class="text-xs text-gray-500 block mb-1">Tags (comma sep)</label>
+                                     <input :value="selected.tags.join(', ')" @input="selected.tags = $event.target.value.split(',').map(t=>t.trim())" class="input-base">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Syllabus Tab -->
+                        <div v-if="activeTab === 'Syllabus'" class="space-y-6 max-w-3xl mx-auto animation-fade-in">
+                            <div v-for="(week, wIdx) in selected.weeks" :key="wIdx" class="bg-[#111] border border-[#222] rounded-xl overflow-hidden">
+                                <div class="p-3 bg-[#151515] flex justify-between items-center group cursor-pointer" @click="week.isOpen = !week.isOpen">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-6 h-6 rounded bg-[#222] flex items-center justify-center text-[10px] font-mono text-gray-400">{{ wIdx + 1 }}</span>
+                                        <input v-model="week.title" @click.stop class="bg-transparent text-sm font-bold text-gray-200 outline-none" placeholder="Week Title">
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button @click.stop="selected.weeks.splice(wIdx, 1)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fa-solid fa-trash text-xs"></i></button>
+                                        <i class="fa-solid fa-chevron-down text-gray-600 text-xs transition" :class="{'rotate-180': week.isOpen}"></i>
+                                    </div>
+                                </div>
+                                
+                                <div v-if="week.isOpen" class="p-4 bg-[#0a0a0a] border-t border-[#222]">
+                                    <textarea v-model="week.content" class="w-full h-24 bg-transparent text-sm text-gray-400 outline-none resize-y font-mono" placeholder="Week details (Markdown)..."></textarea>
+                                </div>
+                            </div>
+                            <button @click="selected.weeks.push({title: 'New Week', content: '', isOpen: true})" class="w-full py-3 border border-dashed border-[#333] rounded-xl text-xs text-gray-500 hover:text-white hover:border-indigo-500 transition font-bold uppercase tracking-wider">+ Add Week</button>
+                        </div>
+
+                         <!-- Resources Tab -->
+                        <div v-if="activeTab === 'Resources'" class="space-y-4 max-w-3xl mx-auto animation-fade-in">
+                            <div v-for="(res, rIdx) in selected.resources" :key="rIdx" class="flex gap-2 items-center bg-[#111] p-2 rounded-lg border border-[#222]">
+                                <select v-model="res.type" class="bg-[#050505] p-2 rounded text-xs text-gray-400 border border-[#333] outline-none">
+                                    <option value="link">Link</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="video">Video</option>
+                                </select>
+                                <input v-model="res.title" class="flex-1 input-base text-sm py-1" placeholder="Resource Title">
+                                <input v-model="res.url" class="flex-1 input-base text-sm py-1 text-blue-400" placeholder="URL">
+                                <button @click="selected.resources.splice(rIdx, 1)" class="p-2 text-gray-600 hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                             <button @click="selected.resources.push({type:'link', title:'', url:''})" class="mt-4 px-4 py-2 bg-[#1a1a1a] hover:bg-[#222] text-xs text-gray-300 rounded-lg border border-[#333] transition">+ Add Resource</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="h-full flex flex-col items-center justify-center text-gray-600">
+                    <i class="fa-solid fa-layer-group text-4xl mb-4 opacity-20"></i>
+                    <p class="text-sm">Select a course to edit</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div v-if="notification" class="fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl border border-gray-700 bg-gray-900 text-white flex items-center gap-3 animate-fade-in">
+            <span class="text-indigo-400">✓</span> {{ notification }}
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    courses: [],
+                    selected: null,
+                    search: '',
+                    activeTab: 'General',
+                    tabs: ['General', 'Syllabus', 'Resources'],
+                    showPreview: false,
+                    notification: null
+                }
+            },
+            computed: {
+                filteredCourses() {
+                    const q = this.search.toLowerCase();
+                    return this.courses.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+                }
+            },
+            mounted() { this.loadFile(); },
+            methods: {
+                async loadFile() {
+                    try {
+                        const res = await fetch('./courses.json');
+                        if (res.ok) {
+                            this.courses = await res.json();
+                            // Data migration/normalization if needed
+                            this.courses.forEach(c => {
+                                if(!c.weeks) c.weeks = [];
+                                if(!c.resources) c.resources = [];
+                            });
+                        }
+                    } catch (e) {
+                         // Fallback or empty init
+                         this.courses = []; 
+                    }
+                },
+                selectCourse(c) {
+                    this.selected = c;
+                    this.activeTab = 'General';
+                    this.showPreview = false;
+                },
+                createCourse() {
+                    const newC = {
+                        id: Date.now().toString(),
+                        code: 'NEW',
+                        name: 'New Course',
+                        desc: '',
+                        credits: 4,
+                        tags: [],
+                        weeks: [],
+                        resources: []
+                    };
+                    this.courses.push(newC);
+                    this.selectCourse(newC);
+                },
+                deleteCourse(id) {
+                    if(confirm('Delete this course?')) {
+                        this.courses = this.courses.filter(c => c.id !== id);
+                        if(this.selected && this.selected.id === id) this.selected = null;
+                    }
+                },
+                renderMd(text) {
+                    return text ? marked.parse(text) : '';
+                },
+                async saveFile() {
+                    try {
+                        if (window.showSaveFilePicker) {
+                            const handle = await window.showSaveFilePicker({ suggestedName: 'courses.json' });
+                            const writable = await handle.createWritable();
+                            await writable.write(JSON.stringify(this.courses, null, 2));
+                            await writable.close();
+                            this.showNotification('All courses saved to courses.json');
+                        } else {
+                            const blob = new Blob([JSON.stringify(this.courses, null, 2)], {type: 'application/json'});
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'courses.json'; a.click();
+                            this.showNotification('Downloaded courses.json');
+                        }
+                    } catch (err) { console.error(err); }
+                },
+                showNotification(msg) {
+                    this.notification = msg;
+                    setTimeout(() => this.notification = null, 3000);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
