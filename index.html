@@ -3,14 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Page - StudyWithUS</title>
+    <title>Course View | StudyWithUS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Python support -->
+    <!-- Python Support -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
-
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        
+        /* Dynamic Accent */
+        :root { --accent: #4f46e5; }
+        
+        .sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: all 0.2s; color: #64748b; font-weight: 500; font-size: 0.9rem; }
+        .sidebar-link:hover { background: #f1f5f9; color: #334155; }
+        .sidebar-link.active { background: var(--accent); color: white; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.1); }
+        
+        .content-card { background: white; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
+        
+        /* Markdown Styles */
+        .prose h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; }
+        .prose h2 { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; }
+        .prose p { margin-bottom: 1rem; line-height: 1.7; color: #334155; }
+        .prose a { color: var(--accent); text-decoration: underline; }
+        
+        /* Editor */
+        .code-editor { background: #1e293b; color: #e2e8f0; font-family: 'Fira Code', monospace; border-radius: 0.5rem; overflow: hidden; }
+    </style>
+    
     <script type="importmap">
         {
             "imports": {
@@ -18,199 +40,146 @@
             }
         }
     </script>
-    
-    <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #f9fafb; color: #333; }
-        
-        /* IITM Style Accents */
-        .brand-header { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .nav-link { color: #555; font-weight: 500; font-size: 0.9em; text-transform: uppercase; }
-        .nav-link:hover { color: #800000; } /* Maroon accent often used by IITs */
-        
-        .course-hero { background: linear-gradient(135deg, #800000 0%, #a52a2a 100%); color: white; padding: 3rem 0; }
-        .chip { background: rgba(255,255,255,0.2); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 500; }
-        
-        .section-title { font-size: 1.25rem; font-weight: 700; color: #444; margin-bottom: 1rem; border-left: 4px solid #800000; padding-left: 0.75rem; }
-        
-        .week-card { background: white; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 0.75rem; overflow: hidden; }
-        .week-header { background: #f8f9fa; padding: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
-        .week-header:hover { background: #f0f0f0; }
-
-        .btn-primary { background-color: #800000; color: white; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 500; transition: background 0.2s; }
-        .btn-primary:hover { background-color: #600000; }
-        
-        /* Playground Editor */
-        .editor-container { font-family: 'Fira Code', monospace; background: #1e1e1e; color: #d4d4d4; border-radius: 8px; overflow: hidden; }
-        .editor-line { display: flex; }
-        .line-num { width: 30px; text-align: right; padding-right: 10px; color: #6e7681; user-select: none; }
-        textarea.code-input { background: transparent; color: inherit; border: none; width: 100%; outline: none; resize: none; line-height: 1.5; font-family: inherit; }
-    </style>
 </head>
-<body class="flex flex-col min-h-screen">
+<body class="h-screen flex text-sm md:text-base">
 
-    <div id="app" class="flex flex-col flex-1">
+    <div id="app" class="flex-1 flex w-full h-full overflow-hidden" :style="{ '--accent': course.meta.accentColor || '#4f46e5' }">
         
-        <!-- Navigation -->
-        <nav class="brand-header sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl font-bold text-[#800000]">IITM BS Degree</span>
-                    <span class="text-gray-400 text-sm">| StudyWithUS</span>
-                </div>
-                <div class="hidden md:flex items-center gap-8">
-                    <a href="#" class="nav-link">Home</a>
-                    <a href="#" class="nav-link">Academics</a>
-                    <a href="#" class="nav-link text-[#800000]">Course Page</a>
-                    <a href="editor.html" class="nav-link border border-gray-300 px-3 py-1 rounded hover:bg-gray-50">Instructor Login</a>
-                </div>
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 z-20">
+            <div class="p-6 border-b border-slate-100">
+                <h1 class="font-bold text-lg tracking-tight text-slate-900 leading-snug">{{ course.meta.title }}</h1>
+                <p class="text-xs text-slate-500 mt-1">{{ course.meta.subtitle }}</p>
             </div>
-        </nav>
-
-        <div v-if="course">
-            <!-- Hero Section -->
-            <header class="course-hero">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="text-xs uppercase tracking-widest opacity-80 mb-2">{{ course.info.type }} Level Course</div>
-                    <h1 class="text-4xl font-bold mb-4">{{ course.info.title }}</h1>
+            
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+                <button v-for="sec in course.sections" :key="sec.id" 
+                    @click="activeSectionId = sec.id"
+                    :class="['sidebar-link w-full text-left', activeSectionId === sec.id ? 'active' : '']">
                     
-                    <div class="flex flex-wrap gap-4 text-sm mb-6">
-                        <div class="flex items-center gap-2">
-                            <span class="opacity-70">Instructors:</span>
-                            <span class="font-medium" v-for="(inst, idx) in course.info.instructors" :key="idx">
-                                <a :href="inst.profileLink" target="_blank" class="underline hover:text-gray-200">{{ inst.name }}</a>{{ idx < course.info.instructors.length - 1 ? ',' : '' }}
-                            </span>
-                        </div>
-                    </div>
+                    <i v-if="sec.type === 'text'" class="fa-solid fa-align-left w-5"></i>
+                    <i v-else-if="sec.type === 'module'" class="fa-solid fa-graduation-cap w-5"></i>
+                    <i v-else-if="sec.type === 'compiler'" class="fa-solid fa-code w-5"></i>
+                    <i v-else-if="sec.type === 'faq'" class="fa-solid fa-circle-question w-5"></i>
+                    <i v-else-if="sec.type === 'calendar'" class="fa-solid fa-calendar w-5"></i>
+                    
+                    <span class="truncate">{{ sec.title }}</span>
+                </button>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-100 text-xs text-center text-slate-400">
+                Powered by StudyWithUS
+            </div>
+        </aside>
 
-                    <div class="flex gap-3">
-                        <span class="chip">ID: {{ course.info.code }}</span>
-                        <span class="chip">{{ course.info.credits }} Credits</span>
-                        <span class="chip">Prereq: {{ course.info.prerequisites }}</span>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Main Content -->
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <!-- Main Content -->
+        <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 lg:p-12 relative">
+            <div class="max-w-5xl mx-auto min-h-full">
                 
-                <!-- Left Column (Tabs & Info) -->
-                <div class="col-span-2 space-y-10">
+                <div v-if="activeSection">
                     
-                    <!-- Tabs -->
-                    <div class="flex border-b border-gray-200">
-                        <button @click="activeTab = 'content'" 
-                            :class="['px-6 py-3 font-medium text-sm transition border-b-2', activeTab === 'content' ? 'border-[#800000] text-[#800000]' : 'border-transparent text-gray-500 hover:text-gray-800']">
-                            Course Content
-                        </button>
-                        <button @click="activeTab = 'playground'" 
-                            :class="['px-6 py-3 font-medium text-sm transition border-b-2 flex items-center gap-2', activeTab === 'playground' ? 'border-[#800000] text-[#800000]' : 'border-transparent text-gray-500 hover:text-gray-800']">
-                            <i class="fa-solid fa-code"></i> Code Playground
-                        </button>
+                    <!-- Header -->
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-900">{{ activeSection.title }}</h2>
+                        <div class="h-1 w-20 bg-[var(--accent)] mt-2 rounded-full"></div>
+                    </header>
+
+                    <!-- DYNAMIC COMPONENTS based on Section Type -->
+
+                    <!-- TEXT -->
+                    <div v-if="activeSection.type === 'text'" class="content-card p-8 md:p-10">
+                        <div class="prose max-w-none" v-html="renderMd(activeSection.content)"></div>
                     </div>
 
-                    <!-- Course Content Tab -->
-                    <div v-if="activeTab === 'content'" class="animate-fade-in space-y-8">
-                        <div>
-                            <h2 class="section-title">About the Course</h2>
-                            <p class="text-gray-600 leading-relaxed">{{ course.info.description }}</p>
+                    <!-- MODULE -->
+                    <div v-if="activeSection.type === 'module'" class="space-y-6">
+                        <div v-if="(!activeSection.items || activeSection.items.length === 0)" class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-200">
+                            <p class="text-slate-500">No content items added yet.</p>
                         </div>
-
-                        <div>
-                            <h2 class="section-title">What you'll learn</h2>
-                            <div class="flex justify-end mb-2">
-                                <button @click="expandAll = !expandAll" class="text-xs text-[#800000] font-bold hover:underline">{{ expandAll ? '- Collapse All' : '+ Show all weeks' }}</button>
+                        
+                        <div v-for="(item, idx) in activeSection.items" :key="idx" class="content-card p-0 flex flex-col md:flex-row shadow-sm hover:shadow-md transition">
+                            <!-- Icon/Thumbnail -->
+                            <div class="w-full md:w-48 bg-slate-100 flex items-center justify-center p-6 md:p-0 border-b md:border-b-0 md:border-r border-slate-200 shrink-0">
+                                <i v-if="item.type === 'video'" class="fa-brands fa-youtube text-4xl text-red-500"></i>
+                                <i v-else-if="item.type === 'resource'" class="fa-solid fa-file-pdf text-4xl text-sky-500"></i>
+                                <i v-else class="fa-solid fa-list-check text-4xl text-orange-500"></i>
                             </div>
                             
-                            <div v-for="(week, idx) in course.weeks" :key="idx" class="week-card">
-                                <div class="week-header" @click="week.isOpen = !week.isOpen">
-                                    <span class="text-gray-800">Week {{ idx + 1 }}: {{ week.title }}</span>
-                                    <i class="fa-solid fa-chevron-down text-gray-400 transition-transform" :class="{'rotate-180': week.isOpen || expandAll}"></i>
+                            <div class="p-6 flex-1 flex flex-col justify-center">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ item.type }}</div>
+                                        <h3 class="text-lg font-bold text-slate-900 mb-2">{{ item.title }}</h3>
+                                    </div>
+                                    <a v-if="item.url" :href="item.url" target="_blank" class="shrink-0 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition">
+                                        {{ item.type === 'video' ? 'Watch' : 'Open' }} <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-xs opacity-50"></i>
+                                    </a>
                                 </div>
-                                <div v-if="week.isOpen || expandAll" class="p-5 border-t border-gray-100 bg-white">
-                                    <div class="prose prose-sm max-w-none text-gray-600 mb-4" v-html="renderMd(week.desc || '')"></div>
-                                    
-                                    <div v-if="week.content && week.content.length" class="space-y-2">
-                                        <h4 class="text-xs font-bold text-gray-400 uppercase">Module Items</h4>
-                                        <div v-for="item in week.content" :key="item.id" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
-                                            <i v-if="item.type === 'video'" class="fa-brands fa-youtube text-red-600 w-5"></i>
-                                            <i v-else-if="item.type === 'resource'" class="fa-solid fa-file-pdf text-red-800 w-5"></i>
-                                            <i v-else class="fa-solid fa-circle text-gray-400 w-5"></i>
-                                            
-                                            <span class="text-sm font-medium text-gray-700">{{ item.title }}</span>
-                                            
-                                            <a v-if="item.url" :href="item.url" target="_blank" class="text-xs text-[#800000] underline ml-auto">View</a>
-                                        </div>
+                                
+                                <!-- Embedded Player for YouTube -->
+                                <div v-if="item.type === 'video' && item.url && !item.url.includes('http')" class="mt-4 aspect-video rounded-lg overflow-hidden bg-black max-w-lg">
+                                    <iframe class="w-full h-full" :src="`https://www.youtube.com/embed/${item.url}`" frameborder="0" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COMPILER -->
+                    <div v-if="activeSection.type === 'compiler'" class="flex flex-col h-[70vh] content-card">
+                         <div class="bg-slate-900 text-white p-4 flex justify-between items-center shrink-0">
+                             <div class="flex items-center gap-2">
+                                 <i class="fa-solid fa-code"></i>
+                                 <span class="font-mono text-sm">playground.{{ activeSection.language === 'python' ? 'py' : 'js' }}</span>
+                             </div>
+                             <button @click="runCode" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
+                                 <i v-if="isRunning" class="fa-solid fa-spinner fa-spin"></i>
+                                 <i v-else class="fa-solid fa-play"></i> Run Code
+                             </button>
+                         </div>
+                         <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                             <!-- Editor -->
+                             <textarea v-model="codeInput" class="flex-1 bg-[#1e293b] text-slate-300 p-4 font-mono text-sm outline-none resize-none leading-relaxed border-b md:border-b-0 md:border-r border-slate-700" spellcheck="false"></textarea>
+                             
+                             <!-- Output -->
+                             <div class="flex-1 bg-[#0f172a] p-4 font-mono text-sm overflow-y-auto">
+                                 <div v-if="!compilerOutput && !compilerError" class="text-slate-600 italic">// Output will appear here...</div>
+                                 <div v-if="compilerOutput" class="text-green-400 whitespace-pre-wrap">{{ compilerOutput }}</div>
+                                 <div v-if="compilerError" class="text-red-400 whitespace-pre-wrap mt-2 pt-2 border-t border-red-900/30">{{ compilerError }}</div>
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div v-if="activeSection.type === 'faq'" class="space-y-4 max-w-3xl">
+                        <div v-for="(qa, idx) in activeSection.questions" :key="idx" class="bg-white rounded-lg p-6 border border-slate-200">
+                            <h3 class="font-bold text-slate-800 text-lg mb-2 flex gap-3">
+                                <span class="text-[var(--accent)]">Q.</span> {{ qa.q }}
+                            </h3>
+                            <p class="text-slate-600 pl-8">{{ qa.a }}</p>
+                        </div>
+                    </div>
+
+                    <!-- CALENDAR -->
+                    <div v-if="activeSection.type === 'calendar'" class="content-card p-8">
+                        <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                            <div v-for="(evt, idx) in sortedEvents(activeSection.events)" :key="idx" class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-[var(--accent)] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                    <i class="fa-regular fa-calendar-check mt-0.5"></i>
+                                </div>
+                                <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded bg-slate-50 border border-slate-100 shadow-sm">
+                                    <div class="flex items-center justify-between space-x-2 mb-1">
+                                        <div class="font-bold text-slate-900">{{ evt.title }}</div>
+                                        <time class="font-mono text-xs text-slate-500">{{ evt.date }}</time>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div v-if="!course.weeks || course.weeks.length === 0" class="text-gray-500 italic text-sm p-4 border rounded bg-gray-50">
-                                Course curriculum is yet to be updated.
-                            </div>
                         </div>
-                    </div>
-
-                    <!-- Code Playground Tab -->
-                    <div v-if="activeTab === 'playground'" class="animate-fade-in space-y-6">
-                        <div class="bg-blue-50 border border-blue-200 rounded p-4 text-sm text-blue-800">
-                            <i class="fa-solid fa-info-circle mr-1"></i> Practice computing concepts directly in your browser. Python support is enabled via Pyodide.
-                        </div>
-
-                        <div class="flex gap-4 mb-2">
-                            <select v-model="codeLang" class="border border-gray-300 rounded px-2 py-1 text-sm bg-white">
-                                <option value="javascript">JavaScript</option>
-                                <option value="python">Python</option>
-                            </select>
-                            <button @click="runCode" class="btn-primary text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-play"></i> Run Code
-                            </button>
-                        </div>
-
-                        <div class="editor-container h-80 relative">
-                            <textarea v-model="code" class="code-input h-full w-full p-4 font-mono text-sm" spellcheck="false" placeholder="# Type your code here..."></textarea>
-                        </div>
-
-                        <div class="bg-black text-green-400 font-mono text-sm p-4 rounded min-h-[100px] whitespace-pre-wrap border border-gray-800 shadow-inner">
-                            <div v-if="output">{{ output }}</div>
-                            <div v-if="error" class="text-red-400">{{ error }}</div>
-                            <div v-if="!output && !error" class="text-gray-600 opacity-50">// Output will appear here</div>
-                        </div>
+                         <div v-if="!activeSection.items && (!activeSection.events || activeSection.events.length === 0)" class="text-center text-slate-400 py-10">No events scheduled.</div>
                     </div>
 
                 </div>
-
-                <!-- Right Column (Sidebar) -->
-                <div class="space-y-8">
-                    
-                    <!-- Grading -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Course Structure & Grading</h3>
-                        <p class="text-sm text-gray-600 leading-relaxed">{{ course.grading }}</p>
-                        <a href="#" class="block mt-4 text-xs font-bold text-[#800000] hover:underline">View Assessent Details &rarr;</a>
-                    </div>
-
-                    <!-- Books -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Books & References</h3>
-                        <ul class="space-y-4">
-                            <li v-for="(book, idx) in course.books" :key="idx" class="text-sm">
-                                <span class="block font-medium text-gray-900">{{ book.title }}</span>
-                                <span class="block text-gray-500 text-xs mt-1">by {{ book.author }}</span>
-                                <a v-if="book.link" :href="book.link" class="inline-block mt-1 text-[#800000] text-xs font-bold">[DOWNLOAD]</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-            </main>
-        </div>
-        
-        <footer class="bg-gray-100 py-8 border-t border-gray-200 mt-auto">
-             <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
-                 &copy; 2025 StudyWithUS (Community Project). Not officially affiliated with IIT Madras.
-             </div>
-        </footer>
-
+            </div>
+        </main>
     </div>
 
     <script type="module">
@@ -225,35 +194,57 @@
         createApp({
             data() {
                 return {
-                    course: null,
-                    activeTab: 'content',
-                    expandAll: false,
-                    code: 'print("Hello World")',
-                    codeLang: 'python',
-                    output: '',
-                    error: ''
+                    course: { meta: {}, sections: [] },
+                    activeSectionId: null,
+                    
+                    // Compiler State
+                    codeInput: '',
+                    compilerOutput: '',
+                    compilerError: '',
+                    isRunning: false
+                }
+            },
+            computed: {
+                activeSection() {
+                    return this.course.sections.find(s => s.id === this.activeSectionId);
+                }
+            },
+            watch: {
+                activeSectionId(newId) {
+                    const sec = this.course.sections.find(s => s.id === newId);
+                    if(sec && sec.type === 'compiler') {
+                        this.codeInput = sec.starterCode || '';
+                        this.compilerOutput = '';
+                        this.compilerError = '';
+                        // Preload Python if needed
+                        if(sec.language === 'python') compiler.initPython();
+                    }
                 }
             },
             async mounted() {
                 this.course = await loadCourse();
-                // Preload Python if possible
-                compiler.initPython(); 
-            },
-            watch: {
-                codeLang(newVal) {
-                    if(newVal === 'python') this.code = 'print("Hello Python")';
-                    else this.code = 'console.log("Hello JS")';
+                if(this.course.sections.length > 0) {
+                    this.activeSectionId = this.course.sections[0].id;
                 }
             },
             methods: {
-                renderMd(text) { return renderMarkdown(text); },
+                renderMd(text) { return renderMarkdown(text || ''); },
+                sortedEvents(events) {
+                    if(!events) return [];
+                    return [...events].sort((a,b) => new Date(a.date) - new Date(b.date));
+                },
                 async runCode() {
-                    this.output = 'Running...';
-                    this.error = '';
+                    if(this.isRunning) return;
+                    this.isRunning = true;
+                    this.compilerOutput = '';
+                    this.compilerError = '';
                     
-                    const res = await compiler.run(this.code, this.codeLang);
-                    this.output = res.output;
-                    this.error = res.error;
+                    const lang = this.activeSection.language || 'javascript';
+                    const res = await compiler.run(this.codeInput, lang);
+                    
+                    this.compilerOutput = res.output;
+                    this.compilerError = res.error;
+                    this.isRunning = false;
                 }
             }
         }).mount('#app');
