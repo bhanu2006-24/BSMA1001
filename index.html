@@ -3,181 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Manager | Student Community</title>
+    <title>Course Catalog | StudyWithUS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Markdown Support -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+            }
+        }
+    </script>
+    
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #050505; color: #e5e5e5; }
-        .glass { background: rgba(30,30,30,0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
-        .input-base { background: #111; border: 1px solid #222; color: white; padding: 0.5rem; border-radius: 0.5rem; width: 100%; outline: none; transition: 0.2s; }
-        .input-base:focus { border-color: #6366f1; }
+        body { font-family: 'Outfit', sans-serif; background-color: #000; color: #e5e5e5; }
+        .glass { background: rgba(20,20,20,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Typography for Content */
+        .prose h1 { font-size: 2rem; margin-bottom: 1rem; color: white; font-weight: 700; letter-spacing: -0.02em; }
+        .prose h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #e0e0e0; font-weight: 600; }
+        .prose h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #d0d0d0; font-weight: 600; }
+        .prose p { margin-bottom: 1.25rem; line-height: 1.75; color: #a3a3a3; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; color: #a3a3a3; }
+        .prose li { margin-bottom: 0.5rem; }
+        .prose code { background: #1a1a1a; padding: 0.2em 0.4em; rounded: 4px; font-family: 'Fira Code', monospace; color: #ec4899; font-size: 0.9em; }
+        .prose pre { background: #111; padding: 1.25rem; rounded-xl; overflow-x: auto; margin-bottom: 1.5rem; border: 1px solid #222; }
+        .prose pre code { background: transparent; padding: 0; color: #e5e5e5; }
+        .prose blockquote { border-left: 4px solid #6366f1; padding-left: 1rem; font-style: italic; color: #888; margin-bottom: 1.5rem; }
+        .prose a { color: #6366f1; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+        .prose a:hover { border-color: #6366f1; }
+        
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; border: 2px solid #000; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
-<body class="min-h-screen p-6 relative overflow-hidden">
+<body class="min-h-screen flex flex-col overflow-hidden bg-black">
 
-    <div id="app" class="flex flex-col h-screen max-w-7xl mx-auto pb-4">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-6 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white"><i class="fa-solid fa-graduation-cap text-lg"></i></div>
+    <div id="app" class="flex-1 flex flex-col h-screen max-w-[1800px] mx-auto w-full relative">
+        
+        <!-- Navigation Bar -->
+        <header class="flex justify-between items-center py-5 px-8 shrink-0 border-b border-[#222] bg-black/50 backdrop-blur-md z-50">
+            <div class="flex items-center gap-4 cursor-pointer" @click="viewMode = 'list'; selected = null">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-white leading-none">Course Manager</h1>
-                    <p class="text-xs text-indigo-400 font-mono mt-1">Single Source of Truth</p>
+                    <h1 class="text-xl font-bold text-white tracking-tight">StudyWithUS</h1>
+                    <p class="text-[10px] text-gray-500 font-mono uppercase tracking-widest">Student Community</p>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i>
-                    <input v-model="search" class="bg-[#111] border border-[#222] rounded-lg pl-8 pr-4 py-2 text-sm text-white focus:border-indigo-500 outline-none w-64" placeholder="Search courses...">
-                </div>
-                <button @click="createCourse" class="bg-[#222] hover:bg-[#333] text-white px-4 py-2 rounded-lg text-sm border border-[#333] transition"><i class="fa-solid fa-plus mr-2"></i>New</button>
-                <button @click="saveFile" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-indigo-900/20 transition"><i class="fa-solid fa-save mr-2"></i>Save All</button>
+            
+            <div class="flex items-center gap-6">
+                <a href="#" class="text-sm font-medium text-gray-400 hover:text-white transition">Community</a>
+                <a href="#" class="text-sm font-medium text-gray-400 hover:text-white transition">Resources</a>
+                <div class="w-[1px] h-6 bg-[#333]"></div>
+                <a href="editor.html" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 border border-indigo-900/50 px-4 py-2 rounded-lg bg-indigo-900/10 hover:bg-indigo-900/20 transition">
+                    Admin Access
+                </a>
             </div>
         </header>
 
-        <!-- Main Workspace -->
-        <div class="flex-1 flex gap-6 overflow-hidden">
-            <!-- Sidebar List -->
-            <div class="w-1/3 flex flex-col gap-4 overflow-y-auto pr-2">
-                <div v-for="course in filteredCourses" :key="course.id" 
-                    @click="selectCourse(course)"
-                    :class="['p-4 rounded-xl border cursor-pointer transition relative overflow-hidden group', 
-                        selected && selected.id === course.id ? 'bg-indigo-900/10 border-indigo-500/50' : 'bg-[#0a0a0a] border-[#222] hover:border-indigo-500/30']">
-                    
-                    <div class="flex justify-between items-start mb-2 relative z-10">
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#151515] text-gray-400 border border-[#222]">{{ course.code }}</span>
-                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                             <button @click.stop="deleteCourse(course.id)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    </div>
-                    <h3 class="font-bold text-gray-200 group-hover:text-white transition relative z-10">{{ course.name }}</h3>
-                    <p class="text-xs text-gray-500 mt-2 line-clamp-2 relative z-10">{{ course.desc }}</p>
-                    
-                    <!-- Selection Indicator -->
-                    <div v-if="selected && selected.id === course.id" class="absolute inset-0 border-2 border-indigo-500/20 rounded-xl pointer-events-none"></div>
-                </div>
-            </div>
-
-            <!-- Editor Pane -->
-            <div class="w-2/3 glass rounded-2xl p-0 flex flex-col relative overflow-hidden">
-                <div v-if="selected" class="h-full flex flex-col">
-                    <!-- Tabs -->
-                    <div class="flex border-b border-[#222] bg-[#0c0c0c] px-6 pt-4">
-                        <button v-for="tab in tabs" :key="tab" @click="activeTab = tab" 
-                            :class="['px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition', 
-                                activeTab === tab ? 'border-indigo-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300']">
-                            {{ tab }}
-                        </button>
-                    </div>
-
-                    <div class="flex-1 overflow-y-auto p-8 bg-[#080808]">
-                        <!-- General Tab -->
-                        <div v-if="activeTab === 'General'" class="space-y-6 max-w-2xl mx-auto animation-fade-in">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Course Code</label>
-                                    <input v-model="selected.code" class="input-base font-mono text-indigo-400" placeholder="CS101">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Title</label>
-                                    <input v-model="selected.name" class="input-base font-bold" placeholder="Intro to...">
-                                </div>
-                            </div>
-                            
-                            <!-- Description with Markdown Preview -->
-                            <div>
-                                <div class="flex justify-between items-end mb-1">
-                                    <label class="text-xs text-gray-500">Description (Markdown)</label>
-                                    <button @click="showPreview = !showPreview" class="text-[10px] text-indigo-400 hover:underline">{{ showPreview ? 'Edit' : 'Preview' }}</button>
-                                </div>
-                                <textarea v-if="!showPreview" v-model="selected.desc" class="input-base h-32 font-mono text-sm leading-relaxed text-gray-300 resize-y" placeholder="# Course Overview..."></textarea>
-                                <div v-else class="prose prose-invert prose-sm bg-[#111] p-4 rounded-lg border border-[#222] min-h-[8rem]" v-html="renderMd(selected.desc)"></div>
-                            </div>
-
-                            <div class="grid grid-cols-3 gap-4">
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Credits</label>
-                                    <input v-model.number="selected.credits" type="number" class="input-base">
-                                </div>
-                                <div class="col-span-2">
-                                     <label class="text-xs text-gray-500 block mb-1">Tags (comma sep)</label>
-                                     <input :value="selected.tags.join(', ')" @input="selected.tags = $event.target.value.split(',').map(t=>t.trim())" class="input-base">
-                                </div>
-                            </div>
+        <!-- Content Area -->
+        <main class="flex-1 overflow-hidden relative">
+            
+            <!-- COURSE LIST VIEW -->
+            <transition name="fade" mode="out-in">
+                <div v-if="!selected" class="h-full overflow-y-auto p-8 lg:p-12">
+                     <div class="max-w-7xl mx-auto">
+                        <div class="mb-12 text-center">
+                            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Expand Your Knowledge</h2>
+                            <p class="text-gray-500 text-lg max-w-2xl mx-auto">Access high-quality course materials, syllabi, and resources curated by top students.</p>
                         </div>
 
-                        <!-- Syllabus Tab -->
-                        <div v-if="activeTab === 'Syllabus'" class="space-y-6 max-w-3xl mx-auto animation-fade-in">
-                            <div v-for="(week, wIdx) in selected.weeks" :key="wIdx" class="bg-[#111] border border-[#222] rounded-xl overflow-hidden">
-                                <div class="p-3 bg-[#151515] flex justify-between items-center group cursor-pointer" @click="week.isOpen = !week.isOpen">
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-6 h-6 rounded bg-[#222] flex items-center justify-center text-[10px] font-mono text-gray-400">{{ wIdx + 1 }}</span>
-                                        <input v-model="week.title" @click.stop class="bg-transparent text-sm font-bold text-gray-200 outline-none" placeholder="Week Title">
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <button @click.stop="selected.weeks.splice(wIdx, 1)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fa-solid fa-trash text-xs"></i></button>
-                                        <i class="fa-solid fa-chevron-down text-gray-600 text-xs transition" :class="{'rotate-180': week.isOpen}"></i>
-                                    </div>
+                        <div class="relative max-w-xl mx-auto mb-16">
+                            <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-500"></i>
+                            <input v-model="search" class="w-full bg-[#111] border border-[#222] rounded-2xl pl-12 pr-6 py-3 text-white focus:border-indigo-500 outline-none transition shadow-2xl" placeholder="Search for courses, codes, or topics...">
+                        </div>
+
+                        <div v-if="filteredCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div v-for="course in filteredCourses" :key="course.id" @click="openCourse(course)" 
+                                class="group bg-[#0a0a0a] border border-[#222] rounded-2xl p-6 hover:border-indigo-500/50 hover:bg-[#0f0f0f] transition-all cursor-pointer relative overflow-hidden">
+                                
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity group-hover:opacity-100 opacity-50"></div>
+
+                                <div class="flex justify-between items-start mb-4 relative z-10">
+                                    <span class="px-3 py-1 rounded-full bg-[#151515] border border-[#2a2a2a] text-xs font-mono text-indigo-400">{{ course.code }}</span>
+                                    <span class="text-xs text-gray-500 font-bold bg-[#151515] px-2 py-1 rounded">{{ course.credits }} Credits</span>
                                 </div>
                                 
-                                <div v-if="week.isOpen" class="p-4 bg-[#0a0a0a] border-t border-[#222]">
-                                    <textarea v-model="week.content" class="w-full h-24 bg-transparent text-sm text-gray-400 outline-none resize-y font-mono" placeholder="Week details (Markdown)..."></textarea>
+                                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">{{ course.name }}</h3>
+                                <p class="text-sm text-gray-500 line-clamp-3 mb-6 h-12">{{ course.desc }}</p>
+                                
+                                <div class="flex flex-wrap gap-2 relative z-10">
+                                    <span v-for="tag in course.tags.slice(0, 3)" :key="tag" class="text-[10px] font-bold uppercase tracking-wider text-gray-600 bg-[#111] px-2 py-1 rounded border border-[#222]">{{ tag }}</span>
                                 </div>
                             </div>
-                            <button @click="selected.weeks.push({title: 'New Week', content: '', isOpen: true})" class="w-full py-3 border border-dashed border-[#333] rounded-xl text-xs text-gray-500 hover:text-white hover:border-indigo-500 transition font-bold uppercase tracking-wider">+ Add Week</button>
                         </div>
 
-                         <!-- Resources Tab -->
-                        <div v-if="activeTab === 'Resources'" class="space-y-4 max-w-3xl mx-auto animation-fade-in">
-                            <div v-for="(res, rIdx) in selected.resources" :key="rIdx" class="flex gap-2 items-center bg-[#111] p-2 rounded-lg border border-[#222]">
-                                <select v-model="res.type" class="bg-[#050505] p-2 rounded text-xs text-gray-400 border border-[#333] outline-none">
-                                    <option value="link">Link</option>
-                                    <option value="pdf">PDF</option>
-                                    <option value="video">Video</option>
-                                </select>
-                                <input v-model="res.title" class="flex-1 input-base text-sm py-1" placeholder="Resource Title">
-                                <input v-model="res.url" class="flex-1 input-base text-sm py-1 text-blue-400" placeholder="URL">
-                                <button @click="selected.resources.splice(rIdx, 1)" class="p-2 text-gray-600 hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <div v-else class="text-center py-20">
+                            <div class="inline-block p-6 rounded-full bg-[#111] mb-4 text-gray-700"><i class="fa-solid fa-ghost text-3xl"></i></div>
+                            <h3 class="text-xl font-bold text-gray-500">No courses found</h3>
+                            <p class="text-sm text-gray-600 mt-2">Try adjusting your search terms.</p>
+                        </div>
+                     </div>
+                </div>
+
+                <!-- COURSE DETAIL VIEW -->
+                <div v-else class="h-full flex flex-col lg:flex-row overflow-hidden">
+                    <!-- Sidebar Navigation (Weeks) -->
+                    <div class="w-full lg:w-80 shrink-0 bg-[#080808] border-r border-[#1a1a1a] flex flex-col h-[40%] lg:h-full">
+                         <div class="p-6 border-b border-[#1a1a1a]">
+                             <button @click="selected = null" class="text-xs font-bold text-gray-500 hover:text-white flex items-center gap-2 mb-4 transition">
+                                 <i class="fa-solid fa-arrow-left"></i> Back to Courses
+                             </button>
+                             <h2 class="text-lg font-bold text-white leading-tight">{{ selected.name }}</h2>
+                             <p class="text-xs font-mono text-indigo-400 mt-1">{{ selected.code }}</p>
+                         </div>
+                         
+                         <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                             <div @click="activeWeek = -1" :class="['p-3 rounded-lg cursor-pointer transition flex items-center gap-3 text-sm font-medium', activeWeek === -1 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40' : 'text-gray-400 hover:text-white hover:bg-[#111]']">
+                                 <i class="fa-solid fa-circle-info w-5 text-center"></i> Overview
+                             </div>
+                             
+                             <div class="my-4 border-t border-[#1a1a1a]"></div>
+                             <p class="px-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Syllabus</p>
+
+                             <div v-for="(week, idx) in selected.weeks" :key="idx" 
+                                 @click="activeWeek = idx"
+                                 :class="['p-3 rounded-lg cursor-pointer transition text-sm font-medium flex items-center justify-between group', 
+                                    activeWeek === idx 
+                                    ? 'bg-[#151515] text-white border border-[#333]' 
+                                    : 'text-gray-500 hover:text-gray-300 hover:bg-[#0f0f0f]']">
+                                 <div class="flex items-center gap-3">
+                                     <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black border border-[#222]">{{ idx + 1 }}</span>
+                                     <span class="truncate w-32">{{ week.title }}</span>
+                                 </div>
+                                 <i class="fa-solid fa-chevron-right text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                             </div>
+                             
+                             <div class="my-4 border-t border-[#1a1a1a]"></div>
+                             <div @click="activeWeek = 'resources'" :class="['p-3 rounded-lg cursor-pointer transition flex items-center gap-3 text-sm font-medium', activeWeek === 'resources' ? 'bg-[#151515] text-white border border-[#333]' : 'text-gray-400 hover:text-white hover:bg-[#111]']">
+                                 <i class="fa-solid fa-layer-group w-5 text-center"></i> Resources
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- Content Viewer -->
+                    <div class="flex-1 overflow-y-auto bg-[#050505] p-8 lg:p-12 relative scroll-smooth">
+                        <!-- Overview -->
+                        <div v-if="activeWeek === -1" class="max-w-4xl mx-auto animate-fade-in">
+                            <span class="text-indigo-500 font-mono text-xs border border-indigo-900/50 bg-indigo-900/10 px-3 py-1 rounded-full mb-6 inline-block">Course Overview</span>
+                            <h1 class="text-4xl font-bold text-white mb-8">{{ selected.name }}</h1>
+                            
+                            <div class="prose prose-invert max-w-none mb-12" v-html="renderMd(selected.desc)"></div>
+
+                            <div class="flex gap-4 mb-12">
+                                <div class="bg-[#111] border border-[#222] rounded-xl p-5 w-48">
+                                    <p class="text-xs text-gray-500 uppercase font-bold mb-1">Credits</p>
+                                    <p class="text-2xl font-bold text-white">{{ selected.credits }}</p>
+                                </div>
+                                <div class="bg-[#111] border border-[#222] rounded-xl p-5 w-48">
+                                    <p class="text-xs text-gray-500 uppercase font-bold mb-1">Total Weeks</p>
+                                    <p class="text-2xl font-bold text-white">{{ selected.weeks.length }}</p>
+                                </div>
                             </div>
-                             <button @click="selected.resources.push({type:'link', title:'', url:''})" class="mt-4 px-4 py-2 bg-[#1a1a1a] hover:bg-[#222] text-xs text-gray-300 rounded-lg border border-[#333] transition">+ Add Resource</button>
+                        </div>
+
+                        <!-- Week Content -->
+                        <div v-else-if="typeof activeWeek === 'number'" class="max-w-4xl mx-auto animate-fade-in">
+                            <div class="flex items-center gap-4 mb-6">
+                                <span class="text-4xl font-bold text-[#222]">0{{ activeWeek + 1 }}</span>
+                                <div class="h-10 w-[1px] bg-[#222]"></div>
+                                <h1 class="text-3xl font-bold text-white">{{ selected.weeks[activeWeek].title }}</h1>
+                            </div>
+                            
+                            <div class="prose prose-invert max-w-none pl-4 border-l border-[#222]" v-html="renderMd(selected.weeks[activeWeek].content)"></div>
+                             
+                            <!-- Render MathJax after content update -->
+                            <div hidden>{{ triggerMathJax() }}</div>
+                        </div>
+
+                        <!-- Resources -->
+                        <div v-else-if="activeWeek === 'resources'" class="max-w-3xl mx-auto animate-fade-in">
+                             <h2 class="text-2xl font-bold text-white mb-8">Course Resources</h2>
+                             
+                             <div v-if="selected.resources.length > 0" class="grid grid-cols-1 gap-4">
+                                 <a v-for="(res, idx) in selected.resources" :key="idx" :href="res.url" target="_blank" class="flex items-center gap-4 p-4 bg-[#111] border border-[#222] rounded-xl hover:border-indigo-500/50 hover:bg-[#151515] transition group">
+                                     <div class="w-12 h-12 rounded-lg bg-[#0a0a0a] flex items-center justify-center text-xl text-gray-500 border border-[#222] group-hover:text-indigo-400 group-hover:border-indigo-500/30 transition">
+                                         <i v-if="res.type === 'link'" class="fa-solid fa-link"></i>
+                                         <i v-else-if="res.type === 'pdf'" class="fa-regular fa-file-pdf"></i>
+                                         <i v-else-if="res.type === 'video'" class="fa-solid fa-play"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">{{ res.title }}</h3>
+                                        <p class="text-xs text-gray-500 font-mono">{{ res.url }}</p>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-600 group-hover:text-white transition"></i>
+                                 </a>
+                             </div>
+                             <div v-else class="text-center py-12 text-gray-600">
+                                 <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-50"></i>
+                                 <p>No external resources listed.</p>
+                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div v-else class="h-full flex flex-col items-center justify-center text-gray-600">
-                    <i class="fa-solid fa-layer-group text-4xl mb-4 opacity-20"></i>
-                    <p class="text-sm">Select a course to edit</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notification -->
-        <div v-if="notification" class="fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl border border-gray-700 bg-gray-900 text-white flex items-center gap-3 animate-fade-in">
-            <span class="text-indigo-400">✓</span> {{ notification }}
-        </div>
-
+            </transition>
+        </main>
     </div>
 
-    <script>
-        const { createApp } = Vue;
+    <script type="module">
+        import { createApp } from 'vue';
+        import { renderMarkdown, configureMarkdown } from './src/md.js';
+        import { loadCourses } from './src/compiler.js';
+        import { loadMathJax, renderMath } from './src/latex.js';
+
+        // Init Utils
+        configureMarkdown();
+        loadMathJax();
+
         createApp({
             data() {
                 return {
                     courses: [],
                     selected: null,
                     search: '',
-                    activeTab: 'General',
-                    tabs: ['General', 'Syllabus', 'Resources'],
-                    showPreview: false,
-                    notification: null
+                    activeWeek: -1, // -1 is Overview, 'resources' is Resources tab
+                    viewMode: 'list'
                 }
             },
             computed: {
@@ -186,70 +245,28 @@
                     return this.courses.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
                 }
             },
-            mounted() { this.loadFile(); },
+            async mounted() {
+                this.courses = await loadCourses('./course.json');
+            },
+            updated() {
+                // Re-render MathJax when DOM updates
+                this.$nextTick(() => {
+                    renderMath();
+                });
+            },
             methods: {
-                async loadFile() {
-                    try {
-                        const res = await fetch('./courses.json');
-                        if (res.ok) {
-                            this.courses = await res.json();
-                            // Data migration/normalization if needed
-                            this.courses.forEach(c => {
-                                if(!c.weeks) c.weeks = [];
-                                if(!c.resources) c.resources = [];
-                            });
-                        }
-                    } catch (e) {
-                         // Fallback or empty init
-                         this.courses = []; 
-                    }
-                },
-                selectCourse(c) {
+                openCourse(c) {
                     this.selected = c;
-                    this.activeTab = 'General';
-                    this.showPreview = false;
-                },
-                createCourse() {
-                    const newC = {
-                        id: Date.now().toString(),
-                        code: 'NEW',
-                        name: 'New Course',
-                        desc: '',
-                        credits: 4,
-                        tags: [],
-                        weeks: [],
-                        resources: []
-                    };
-                    this.courses.push(newC);
-                    this.selectCourse(newC);
-                },
-                deleteCourse(id) {
-                    if(confirm('Delete this course?')) {
-                        this.courses = this.courses.filter(c => c.id !== id);
-                        if(this.selected && this.selected.id === id) this.selected = null;
-                    }
+                    this.activeWeek = -1;
+                    this.viewMode = 'detail';
+                    window.scrollTo(0, 0);
                 },
                 renderMd(text) {
-                    return text ? marked.parse(text) : '';
+                    return renderMarkdown(text);
                 },
-                async saveFile() {
-                    try {
-                        if (window.showSaveFilePicker) {
-                            const handle = await window.showSaveFilePicker({ suggestedName: 'courses.json' });
-                            const writable = await handle.createWritable();
-                            await writable.write(JSON.stringify(this.courses, null, 2));
-                            await writable.close();
-                            this.showNotification('All courses saved to courses.json');
-                        } else {
-                            const blob = new Blob([JSON.stringify(this.courses, null, 2)], {type: 'application/json'});
-                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'courses.json'; a.click();
-                            this.showNotification('Downloaded courses.json');
-                        }
-                    } catch (err) { console.error(err); }
-                },
-                showNotification(msg) {
-                    this.notification = msg;
-                    setTimeout(() => this.notification = null, 3000);
+                triggerMathJax() {
+                    // Helper to trigger mathjax in template if needed
+                    return '';
                 }
             }
         }).mount('#app');
