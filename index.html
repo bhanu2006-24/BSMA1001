@@ -117,7 +117,10 @@
                     </div>
                     <div v-if="activeItem?.type === 'compiler'" class="flex gap-2">
                          <span class="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-500">{{ activeItem.language }}</span>
-                         <button @click="runCode" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700 transition">Run Code <i class="fa-solid fa-play ml-1"></i></button>
+                         <button @click="runCode" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700 transition">
+                            <span v-if="isRunning"><i class="fa-solid fa-spinner fa-spin"></i> Running</span>
+                            <span v-else>Run Code <i class="fa-solid fa-play ml-1"></i></span>
+                         </button>
                     </div>
                 </div>
 
@@ -210,88 +213,6 @@
     </div>
 
     <!-- MAIN LOGIC -->
-    <script type="module">
-        import { createApp } from 'vue';
-        import { loadCourse } from './src/js/course_data.js';
-        import { renderMarkdown, configureMarkdown } from './src/js/md.js';
-        import { CodeCompiler } from './src/js/compiler.js';
-
-        configureMarkdown();
-        const compiler = new CodeCompiler();
-
-        createApp({
-            data() {
-                return {
-                    course: { meta: {}, sections: [] },
-                    activeSec: null,
-                    activeItem: null,
-                    // Compiler State
-                    code: '',
-                    cmdOut: '',
-                    cmdErr: ''
-                }
-            },
-            watch: {
-                activeItem: {
-                    immediate: true,
-                    async handler(val) {
-                        this.refreshMath();
-                        if(val && val.type === 'compiler') {
-                            this.code = val.starterCode || '';
-                            if(val.language === 'python') compiler.initPython();
-                        }
-                    }
-                }
-            },
-            async mounted() {
-                this.course = await loadCourse();
-                if(this.course.sections.length > 0) {
-                    // Auto-open first section
-                    const first = this.course.sections[0];
-                    this.toggleSec(first);
-                    if(first.items && first.items.length > 0) {
-                        this.selectItem(first, first.items[0]);
-                    }
-                }
-            },
-            methods: {
-                renderMd(t) { return renderMarkdown(t || ''); },
-                refreshMath() {
-                    this.$nextTick(() => { if(window.MathJax) window.MathJax.typesetPromise(); });
-                },
-                toggleSec(sec) {
-                    sec.isOpen = !sec.isOpen;
-                },
-                selectItem(sec, item) {
-                    this.activeSec = sec;
-                    this.activeItem = item;
-                    // Reset transient states
-                    this.cmdOut = ''; this.cmdErr = '';
-                },
-                isLocal(url) {
-                    return url && (url.startsWith('./') || url.startsWith('assets/') || !url.includes('http'));
-                },
-                getEmbed(url) {
-                    if(!url) return '';
-                    if(url.includes('youtu')) {
-                         const v = url.split('v=')[1] || url.split('/').pop();
-                         return `https://www.youtube.com/embed/${v.split('&')[0]}`;
-                    }
-                    return url;
-                },
-                getIcon(t) {
-                    const m = { text: 'fa-align-left', video: 'fa-circle-play', quiz: 'fa-list-check', compiler: 'fa-code', resource: 'fa-file', pdf: 'fa-file-pdf' };
-                    return 'fa-regular ' + (m[t] || 'fa-file');
-                },
-                async runCode() {
-                    this.cmdOut = 'Running...';
-                    this.cmdErr = '';
-                    const res = await compiler.run(this.code, this.activeItem.language);
-                    this.cmdOut = res.output;
-                    this.cmdErr = res.error;
-                }
-            }
-        }).mount('#app');
-    </script>
+    <script type="module" src="./src/js/viewer.js"></script>
 </body>
 </html>

@@ -69,12 +69,12 @@
                 </div>
                 
                 <div class="flex-1 overflow-y-auto p-2 space-y-1" ref="sectionList">
-                    <div @click="activeId('meta')" :class="['p-2 rounded cursor-pointer flex items-center gap-3 text-sm font-medium transition', activeIsMeta ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white']">
+                    <div @click="selectSec('meta')" :class="['p-2 rounded cursor-pointer flex items-center gap-3 text-sm font-medium transition', activeIsMeta ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white']">
                         <i class="fa-solid fa-gear"></i> Settings
                     </div>
 
                     <div v-for="(sec, idx) in course.sections" :key="sec.id"
-                        @click="activeId(sec.id)"
+                        @click="selectSec(sec.id)"
                         :class="['p-2 rounded cursor-pointer flex items-center gap-2 group transition text-sm', activeSec === sec ? 'bg-slate-800 text-white border border-blue-500/50' : 'text-slate-400 border border-transparent hover:bg-slate-800']"
                         :data-id="sec.id">
                         <i class="fa-solid fa-grip-vertical drag-handle text-slate-600 hover:text-slate-400"></i>
@@ -111,7 +111,7 @@
                         <!-- Section Header -->
                         <div class="flex justify-between items-center bg-slate-900/50 p-4 rounded-lg border border-slate-800 sticky top-0 backdrop-blur-md z-10">
                             <input v-model="activeSec.title" class="bg-transparent text-2xl font-bold text-white outline-none w-full placeholder-slate-600" placeholder="Section Title">
-                            <button @click="deleteSection" class="btn-ghost text-red-500 hover:text-red-400 hover:bg-red-900/20"><i class="fa-solid fa-trash"></i></button>
+                            <button @click="delSection" class="btn-ghost text-red-500 hover:text-red-400 hover:bg-red-900/20"><i class="fa-solid fa-trash"></i></button>
                         </div>
 
                         <!-- ITEMS LIST -->
@@ -130,7 +130,7 @@
                                     <span class="font-mono text-xs uppercase text-slate-500">{{ item.type }}</span>
                                     <input v-model="item.title" @click.stop class="bg-transparent text-sm font-bold text-white outline-none flex-1" placeholder="Item Title">
                                     <i :class="['fa-solid text-xs text-slate-500 transition', item.isOpen ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
-                                    <button @click.stop="activeSec.items.splice(idx, 1)" class="text-slate-600 hover:text-red-500 px-2"><i class="fa-solid fa-xmark"></i></button>
+                                    <button @click.stop="delItem(idx)" class="text-slate-600 hover:text-red-500 px-2"><i class="fa-solid fa-xmark"></i></button>
                                 </div>
 
                                 <!-- Item Body -->
@@ -138,7 +138,10 @@
                                     
                                     <!-- TEXT EDITOR -->
                                     <div v-if="item.type === 'text'">
-                                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Markdown Content</label>
+                                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1 flex justify-between">
+                                            <span>Markdown Content</span>
+                                            <i class="fa-brands fa-markdown text-lg text-slate-600"></i>
+                                        </label>
                                         <textarea v-model="item.content" class="input h-64 font-mono text-sm leading-relaxed" placeholder="# Write something..."></textarea>
                                     </div>
 
@@ -151,7 +154,7 @@
                                                     <input v-model="item.url" class="input font-mono text-xs" placeholder="assets/video.mp4 or https://youtube.com/...">
                                                     <label class="btn btn-ghost border border-slate-700 text-xs whitespace-nowrap relative cursor-pointer hover:bg-slate-800">
                                                         <i class="fa-solid fa-upload mr-1"></i> Upload
-                                                        <input type="file" @change="(e) => fakeUpload(e, item)" class="absolute inset-0 opacity-0 cursor-pointer">
+                                                        <input type="file" @change="(e) => handleUpload(e, item)" class="absolute inset-0 opacity-0 cursor-pointer">
                                                     </label>
                                                 </div>
                                             </div>
@@ -229,89 +232,6 @@
         </div>
     </div>
 
-    <script type="module">
-        import { createApp } from 'vue';
-        import { loadCourse, exportCourse } from './src/js/course_data.js';
-
-        createApp({
-            data() {
-                return {
-                    course: { meta: {}, sections: [] },
-                    currentSecId: 'meta',
-                    unsaved: false
-                }
-            },
-            computed: {
-                activeIsMeta() { return this.currentSecId === 'meta'; },
-                activeSec() { return this.course.sections.find(s => s.id === this.currentSecId); }
-            },
-            watch: {
-                course: { handler() { this.unsaved = true; }, deep: true }
-            },
-            async mounted() {
-                this.course = await loadCourse();
-                this.$nextTick(() => {
-                    // Init Sortables
-                    new Sortable(this.$refs.sectionList, {
-                        handle: '.drag-handle', animation: 150,
-                        onEnd: (evt) => {
-                            const item = this.course.sections.splice(evt.oldIndex, 1)[0];
-                            this.course.sections.splice(evt.newIndex, 0, item);
-                        }
-                    });
-                     if(this.$refs.itemList) {
-                         // Note: This needs to be re-inited when section changes, handled in watcher
-                     }
-                });
-            },
-            methods: {
-                save() { exportCourse(this.course); this.unsaved = false; },
-                activeId(id) { this.currentSecId = id; },
-                addSection() {
-                    const id = 'sec_' + Date.now();
-                    this.course.sections.push({ id, title: 'New Section', items: [] });
-                    this.currentSecId = id;
-                },
-                deleteSection() {
-                    if(confirm("Delete this section?")) {
-                        const idx = this.course.sections.findIndex(s => s.id === this.currentSecId);
-                        this.course.sections.splice(idx, 1);
-                        this.currentSecId = 'meta';
-                    }
-                },
-                addItem(type) {
-                    if(!this.activeSec) return;
-                    const item = {
-                        id: 'item_' + Date.now(),
-                        type,
-                        title: 'New ' + type.charAt(0).toUpperCase() + type.slice(1),
-                        isOpen: true
-                    };
-                    if(type === 'text') item.content = '';
-                    if(type === 'quiz') item.questions = [];
-                    if(type === 'compiler') { item.language = 'python'; item.starterCode = ''; }
-                    this.activeSec.items.push(item);
-                },
-                addQuestion(item) {
-                    if(!item.questions) item.questions = [];
-                    item.questions.push({ type: 'mcq', text: 'New Question', options: ['Option 1', 'Option 2']});
-                },
-                fakeUpload(e, item) {
-                    const f = e.target.files[0];
-                    if(!f) return;
-                    let path = 'assets/';
-                    if(f.type.includes('image')) path += 'imgs/';
-                    else if(f.type.includes('video')) path += 'videos/';
-                    else if(f.type.includes('pdf')) path += 'pdf/';
-                    item.url = path + f.name;
-                    alert("Selected: " + f.name + "\n\nPlease manually move this file to: " + path);
-                },
-                getIcon(t) {
-                     const map = { text: 'fa-paragraph', video: 'fa-video', quiz: 'fa-list', compiler: 'fa-code', resource: 'fa-file', pdf: 'fa-file-pdf' };
-                     return 'fa-solid ' + (map[t] || 'fa-box');
-                }
-            }
-        }).mount('#app');
-    </script>
+    <script type="module" src="./src/js/editor.js"></script>
 </body>
 </html>
