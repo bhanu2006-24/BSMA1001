@@ -3,42 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Editor | Curriculum Studio</title>
+    <title>Instructor Admin | Curriculum Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Local styling overrides for premium feel -->
     <style>
-        :root { --accent: #6366f1; --bg-dark: #050505; --panel: #0a0a0a; --border: #1a1a1a; }
-        body { font-family: 'Outfit', sans-serif; background-color: var(--bg-dark); color: #e5e5e5; }
+        :root { --accent: #800000; --bg: #050505; --panel: #0a0a0a; --border: #222; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: #e5e5e5; }
         
-        /* Glass & Panels */
-        .glass-panel { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(16px); border: 1px solid var(--border); }
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; transition: border-color 0.2s; }
-        .card:hover { border-color: #333; }
+        .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; }
+        .input-dark { background: #111; border: 1px solid #222; color: #eee; padding: 0.5rem; width: 100%; border-radius: 6px; outline: none; }
+        .input-dark:focus { border-color: var(--accent); }
+        .sidebar-btn { text-align: left; padding: 0.75rem 1rem; width: 100%; border-radius: 6px; transition: 0.2s; color: #888; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        .sidebar-btn:hover { background: #111; color: white; }
+        .sidebar-btn.active { background: #1a0505; color: #ff9999; border: 1px solid #4d0000; }
         
-        /* Inputs */
-        .input-dark { background: #0f0f0f; border: 1px solid #222; color: white; padding: 0.75rem 1rem; border-radius: 8px; width: 100%; outline: none; transition: 0.2s; font-size: 0.9em; }
-        .input-dark:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1); }
-        .input-mini { padding: 0.4rem 0.6rem; font-size: 0.8rem; background: #151515; border: 1px solid #2a2a2a; border-radius: 6px; color: white; outline: none; }
-        .input-mini:focus { border-color: var(--accent); }
-
-        /* Range Slider Customization */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent); margin-top: -6px; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); cursor: pointer; border: 2px solid #1a1a1a; transition: transform 0.1s; }
-        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #222; border-radius: 2px; }
+        .btn-action { background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.9em; transition: 0.2s; }
+        .btn-action:hover { filter: brightness(1.1); }
         
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-
-        /* Transitions */
-        .slide-enter-active, .slide-leave-active { transition: all 0.3s ease; }
-        .slide-enter-from, .slide-leave-to { opacity: 0; transform: translateY(10px); }
+        /* Transition */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
@@ -51,231 +35,148 @@
         }
     </script>
 </head>
-<body class="h-screen flex flex-col overflow-hidden bg-black selection:bg-indigo-500/30">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <div id="app" class="flex-1 flex flex-col h-full max-w-[1920px] mx-auto w-full relative">
+    <div id="app" class="flex-1 flex flex-col h-full">
         
-        <!-- Top Bar -->
-        <header class="h-16 shrink-0 border-b border-[#1a1a1a] flex justify-between items-center px-6 bg-black/50 z-50">
-            <div class="flex items-center gap-4">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg cursor-default">C</div>
-                <div>
-                    <h1 class="text-sm font-bold text-white tracking-tight">Course Editor</h1>
-                    <p class="text-[10px] text-gray-500 font-mono">v3.0 • Curriculum Studio</p>
-                </div>
+        <!-- Header -->
+        <header class="h-16 shrink-0 border-b border-[#222] bg-[#0a0a0a] flex justify-between items-center px-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-[#800000] flex items-center justify-center text-white font-bold">A</div>
+                <h1 class="text-white font-bold tracking-tight">Curriculum Admin <span class="text-gray-500 font-normal">/ BSMA1001</span></h1>
             </div>
             
             <div class="flex items-center gap-4">
-                <span v-if="unsavedChanges" class="text-xs text-amber-500 font-medium animate-pulse">● Unsaved Changes</span>
-                <button @click="saveData" class="bg-[#e0e0e0] hover:bg-white text-black px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Course Data
+                <span v-if="unsavedChanges" class="text-amber-500 text-xs font-bold animate-pulse">● Unsaved Changes</span>
+                <button @click="saveData" class="btn-action flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Save
                 </button>
-                <div class="w-[1px] h-6 bg-[#222] mx-2"></div>
-                <a href="index.html" target="_blank" class="text-gray-500 hover:text-white transition text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-eye"></i> Preview
+                <a href="index.html" target="_blank" class="text-gray-500 hover:text-white text-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
             </div>
         </header>
 
-        <!-- Main Layout -->
         <div class="flex-1 flex overflow-hidden">
-            
-            <!-- Sidebar Navigation -->
-            <nav class="w-64 bg-[#080808] border-r border-[#1a1a1a] flex flex-col pt-6 pb-4 px-4 gap-1 shrink-0">
-                <div class="mb-4 px-2">
-                    <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Course</h2>
-                    <div class="text-sm font-bold text-white truncate">{{ course.title || 'Untitled Course' }}</div>
-                    <div class="text-[10px] text-indigo-400 font-mono bg-indigo-900/10 inline-block px-1.5 rounded mt-1 border border-indigo-900/30">{{ course.code }}</div>
-                </div>
-
-                <div class="h-[1px] bg-[#1a1a1a] my-2"></div>
-
-                <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-                    :class="['w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium transition flex items-center gap-3', 
-                    activeTab === tab.id ? 'bg-[#151515] text-white border border-[#2a2a2a]' : 'text-gray-500 hover:text-gray-300 hover:bg-[#111]']">
-                    <i :class="[tab.icon, activeTab === tab.id ? 'text-indigo-500' : '']"></i> {{ tab.label }}
-                </button>
+            <!-- Sidebar -->
+            <nav class="w-64 bg-[#080808] border-r border-[#222] p-4 flex flex-col gap-1">
+                 <button @click="activeTab = 'info'" :class="['sidebar-btn', activeTab === 'info' ? 'active' : '']">
+                     <i class="fa-solid fa-info-circle w-5"></i> Info & Instructors
+                 </button>
+                 <button @click="activeTab = 'curriculum'" :class="['sidebar-btn', activeTab === 'curriculum' ? 'active' : '']">
+                     <i class="fa-solid fa-layer-group w-5"></i> Curriculum
+                 </button>
+                 <button @click="activeTab = 'refs'" :class="['sidebar-btn', activeTab === 'refs' ? 'active' : '']">
+                     <i class="fa-solid fa-book w-5"></i> Books & Grading
+                 </button>
             </nav>
 
-            <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto bg-[#050505] p-8 lg:p-10 relative">
-                
-                <!-- ESSENTIALS TAB -->
-                <transition name="fade" mode="out-in">
-                <div v-if="activeTab === 'essentials'" class="max-w-4xl mx-auto space-y-8 animate-fade-in">
-                    <h2 class="text-2xl font-bold text-white mb-6">Course Essentials</h2>
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto bg-black p-8">
+                <div class="max-w-4xl mx-auto">
                     
-                    <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#0a0a0a]">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Course Title</label>
-                            <input v-model="course.title" class="input-dark text-lg font-bold" placeholder="E.g. Computational Thinking">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Course Code</label>
-                            <input v-model="course.code" class="input-dark font-mono text-indigo-400" placeholder="BSCS1001">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Designated Level</label>
-                            <select v-model="course.level" class="input-dark">
-                                <option value="Foundation">Foundation</option>
-                                <option value="Diploma">Diploma</option>
-                                <option value="Degree">Degree</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2 flex justify-between">
-                                 <span>Synopsis (Markdown Supported)</span>
-                                 <i class="fa-brands fa-markdown opacity-50"></i>
-                             </label>
-                             <textarea v-model="course.synopsis" class="input-dark h-32 resize-y font-mono text-sm text-gray-400" placeholder="Enter course description..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GRADING TAB -->
-                <div v-else-if="activeTab === 'grading'" class="max-w-3xl mx-auto space-y-8 animate-fade-in">
-                    <h2 class="text-2xl font-bold text-white mb-6">Grading Scheme</h2>
-                    
-                    <div class="card p-8 bg-[#0a0a0a]">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-8">Weights Distribution</h3>
-                        
-                        <div class="space-y-8">
-                            <div v-for="(weight, key) in course.grading" :key="key">
-                                <div class="flex justify-between text-sm mb-2 font-medium">
-                                    <span class="capitalize text-gray-300">{{ key.replace(/([A-Z])/g, ' $1').trim() }}</span>
-                                    <span class="text-white">{{ weight }}%</span>
+                    <!-- INFO TAB -->
+                    <div v-if="activeTab === 'info'" class="space-y-6">
+                        <div class="panel p-6">
+                            <h2 class="text-lg font-bold text-white mb-4">Course Details</h2>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase">Title</label>
+                                    <input v-model="course.info.title" class="input-dark">
                                 </div>
-                                <input type="range" v-model.number="course.grading[key]" min="0" max="100" />
-                            </div>
-                        </div>
-
-                        <div class="mt-8 pt-6 border-t border-[#222] flex justify-between items-center">
-                            <span class="font-bold text-white text-lg">Total</span>
-                            <span :class="['font-bold text-lg', totalWeight === 100 ? 'text-green-500' : 'text-red-500']">{{ totalWeight }}%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CURRICULUM TAB (Builder) -->
-                <div v-else-if="activeTab === 'curriculum'" class="max-w-5xl mx-auto space-y-6 animate-fade-in">
-                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-white">Curriculum Builder</h2>
-                        <button @click="addWeek" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg shadow-indigo-900/20">
-                            + Add Week
-                        </button>
-                    </div>
-
-                    <div v-for="(week, wIdx) in course.weeks" :key="wIdx" class="card bg-[#0a0a0a] overflow-hidden group">
-                        <!-- Week Header -->
-                        <div class="p-4 flex items-center justify-between border-b border-[#1a1a1a] bg-[#111] cursor-pointer" @click="week.isOpen = !week.isOpen">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center text-xs font-mono font-bold text-gray-500">W{{ wIdx + 1 }}</div>
-                                <input v-model="week.title" @click.stop class="bg-transparent text-white font-bold text-lg outline-none placeholder-gray-600" placeholder="Week Title">
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="text-[10px] text-gray-600 font-mono mr-2 hidden md:block">
-                                    {{ getItemCount(week, 'video') }} Lectures • {{ getItemCount(week, 'resource') }} Resources • {{ getItemCount(week, 'quiz') }} Quizzes
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase">Code</label>
+                                    <input v-model="course.info.code" class="input-dark text-[#800000] font-mono">
                                 </div>
-                                <button @click.stop="deleteWeek(wIdx)" class="text-gray-600 hover:text-red-500 p-2 transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button>
-                                <i class="fa-solid fa-chevron-down text-gray-500 transition-transform duration-200" :class="{'rotate-180': week.isOpen}"></i>
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase">Credits</label>
+                                    <input v-model.number="course.info.credits" type="number" class="input-dark">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase">Prerequisites</label>
+                                    <input v-model="course.info.prerequisites" class="input-dark">
+                                </div>
+                                <div class="col-span-2">
+                                     <label class="text-xs text-gray-500 uppercase">Description</label>
+                                     <textarea v-model="course.info.description" class="input-dark h-24 resize-none"></textarea>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Week Content -->
-                        <div v-if="week.isOpen" class="p-4 bg-[#0a0a0a]">
-                             <!-- Action Bar -->
-                             <div class="grid grid-cols-3 gap-4 mb-6">
-                                 <button @click="addItem(week, 'video')" class="py-3 border border-dashed border-[#333] rounded-lg text-xs font-bold text-gray-500 hover:text-red-400 hover:border-red-500/30 transition flex items-center justify-center gap-2">
-                                     <i class="fa-brands fa-youtube"></i> Add Video
-                                 </button>
-                                 <button @click="addItem(week, 'resource')" class="py-3 border border-dashed border-[#333] rounded-lg text-xs font-bold text-gray-500 hover:text-green-400 hover:border-green-500/30 transition flex items-center justify-center gap-2">
-                                     <i class="fa-solid fa-link"></i> Add Resource
-                                 </button>
-                                 <button @click="addItem(week, 'quiz')" class="py-3 border border-dashed border-[#333] rounded-lg text-xs font-bold text-gray-500 hover:text-orange-400 hover:border-orange-500/30 transition flex items-center justify-center gap-2">
-                                     <i class="fa-solid fa-list-check"></i> Add Quiz
-                                 </button>
+                        <div class="panel p-6">
+                             <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-bold text-white">Instructors</h2>
+                                <button @click="course.info.instructors.push({name:'', profileLink:''})" class="text-xs text-[#800000] font-bold hover:underline">+ Add Instructor</button>
                              </div>
-
-                             <!-- Items List -->
                              <div class="space-y-3">
-                                 <div v-for="(item, iIdx) in week.content" :key="iIdx" class="relative group/item">
-                                     
-                                    <!-- Video Item -->
-                                     <div v-if="item.type === 'video'" class="flex items-center gap-4 p-4 rounded-xl bg-[#111] border border-[#222] border-l-4 border-l-red-500/50">
-                                         <div class="text-red-500"><i class="fa-brands fa-youtube text-xl"></i></div>
-                                         <div class="flex-1 grid gap-2">
-                                             <input v-model="item.title" class="bg-transparent text-sm font-bold text-white outline-none" placeholder="Video Title">
-                                             <div class="flex items-center gap-2">
-                                                 <input v-model="item.url" class="bg-[#050505] text-xs text-blue-400 px-2 py-1 rounded border border-[#222] flex-1 outline-none font-mono" placeholder="YouTube Video ID">
-                                                 <input v-model="item.duration" class="bg-[#050505] text-xs text-gray-400 px-2 py-1 rounded border border-[#222] w-20 outline-none text-center" placeholder="10:00">
-                                             </div>
-                                         </div>
-                                         <!-- Preview Thumbnail -->
-                                         <div class="w-16 h-10 bg-black rounded overflow-hidden relative">
-                                             <img v-if="item.url" :src="`https://img.youtube.com/vi/${item.url}/mqdefault.jpg`" class="w-full h-full object-cover opacity-50">
-                                         </div>
-                                         <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                                     </div>
+                                 <div v-for="(inst, idx) in course.info.instructors" :key="idx" class="flex gap-2">
+                                     <input v-model="inst.name" placeholder="Name" class="input-dark flex-1">
+                                     <input v-model="inst.profileLink" placeholder="Profile URL" class="input-dark flex-1">
+                                     <button @click="course.info.instructors.splice(idx, 1)" class="text-gray-600 hover:text-red-500 px-2"><i class="fa-solid fa-trash"></i></button>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
 
-                                     <!-- Resource Item -->
-                                     <div v-if="item.type === 'resource'" class="flex items-center gap-4 p-4 rounded-xl bg-[#111] border border-[#222] border-l-4 border-l-green-500/50">
-                                         <div class="text-green-500"><i class="fa-solid fa-link text-xl"></i></div>
-                                         <div class="flex-1 grid gap-2">
-                                             <div class="flex items-center gap-2">
-                                                 <input v-model="item.title" class="bg-transparent text-sm font-bold text-white flex-1 outline-none" placeholder="Resource Title">
-                                                 <select v-model="item.format" class="bg-[#050505] text-[10px] text-gray-400 px-2 py-1 rounded border border-[#222] outline-none">
-                                                     <option value="link">Link</option>
-                                                     <option value="pdf">PDF</option>
-                                                 </select>
-                                             </div>
-                                             <input v-model="item.url" class="bg-[#050505] text-xs text-green-400 px-2 py-1 rounded border border-[#222] w-full outline-none font-mono" placeholder="https://...">
-                                         </div>
-                                         <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                                     </div>
+                    <!-- CURRICULUM TAB -->
+                    <div v-if="activeTab === 'curriculum'" class="space-y-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-white">Curriculum</h2>
+                            <button @click="addWeek" class="bg-[#222] hover:bg-[#333] text-white px-4 py-2 rounded text-sm transition font-bold">+ New Week</button>
+                        </div>
 
-                                     <!-- Quiz Item -->
-                                     <div v-if="item.type === 'quiz'" class="flex flex-col gap-4 p-4 rounded-xl bg-[#111] border border-[#222] border-l-4 border-l-orange-500/50">
-                                         <div class="flex items-center justify-between">
-                                             <div class="flex items-center gap-4">
-                                                 <div class="text-orange-500"><i class="fa-solid fa-list-check text-xl"></i></div>
-                                                 <input v-model="item.title" class="bg-transparent text-sm font-bold text-white outline-none w-64" placeholder="Quiz Title">
-                                                 <span class="text-xs text-gray-600 font-mono border border-[#333] px-2 py-0.5 rounded">{{ item.questions.length }} Questions</span>
-                                             </div>
-                                             <div class="flex items-center gap-3">
-                                                 <button @click="item.isOpen = !item.isOpen" class="text-gray-500 hover:text-white text-xs underline">{{ item.isOpen ? 'Collapse' : 'Edit Questions' }}</button>
-                                                 <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                                             </div>
-                                         </div>
-                                         
-                                         <!-- Quiz Builder -->
-                                         <div v-if="item.isOpen" class="mt-2 pl-10 border-t border-[#222] pt-4 space-y-4">
-                                             <div v-for="(q, qIdx) in item.questions" :key="qIdx" class="bg-[#0a0a0a] border border-[#222] p-4 rounded-lg relative">
-                                                 <div class="flex justify-between mb-3">
-                                                     <div class="flex items-center gap-2">
-                                                         <span class="text-xs font-mono text-gray-500">Q{{qIdx+1}}</span>
-                                                         <select v-model="q.type" class="input-mini">
-                                                             <option value="mcq">MCQ</option>
-                                                             <option value="msq">MSQ</option>
-                                                             <option value="nat">Numeric</option>
-                                                             <option value="bool">T/F</option>
-                                                         </select>
-                                                     </div>
-                                                     <button @click="item.questions.splice(qIdx, 1)" class="text-gray-700 hover:text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
-                                                 </div>
-                                                 
-                                                 <input v-model="q.text" class="input-dark mb-3 text-sm font-bold" placeholder="Question Text...">
-                                                 
-                                                 <!-- Options Builder -->
-                                                 <div v-if="['mcq', 'msq'].includes(q.type)" class="space-y-2 pl-4 border-l border-[#222]">
-                                                     <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex items-center gap-2">
-                                                         <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
-                                                         <input v-model="q.options[oIdx]" class="bg-transparent text-sm text-gray-400 outline-none flex-1 border-b border-transparent focus:border-[#444]" placeholder="Option text">
-                                                         <button @click="q.options.splice(oIdx, 1)" class="text-gray-700 hover:text-white"><i class="fa-solid fa-minus"></i></button>
-                                                     </div>
-                                                     <button @click="q.options.push('')" class="text-[10px] text-indigo-500 hover:text-indigo-400 mt-1 font-bold">+ Add Option</button>
-                                                 </div>
-                                             </div>
-                                             <button @click="addQuestion(item)" class="w-full py-2 border border-[#333] bg-[#111] text-gray-500 hover:text-white text-xs rounded transition">+ Add Question</button>
+                        <div v-for="(week, wIdx) in course.weeks" :key="wIdx" class="panel p-4 mb-4">
+                            <div class="flex items-center gap-4 mb-4">
+                                <span class="bg-[#222] px-2 py-1 rounded text-xs font-mono text-gray-400">Week {{ wIdx + 1 }}</span>
+                                <input v-model="week.title" class="bg-transparent text-lg font-bold text-white flex-1 outline-none" placeholder="Week Title">
+                                <button @click="course.weeks.splice(wIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                            
+                            <textarea v-model="week.desc" placeholder="Brief description (Markdown)..." class="input-dark h-16 mb-4 text-sm"></textarea>
+                            
+                            <div class="pl-4 border-l border-[#222]">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Module Items</h4>
+                                <div class="space-y-2">
+                                    <div v-for="(item, iIdx) in week.content" :key="iIdx" class="flex items-center gap-2 bg-[#111] p-2 rounded border border-[#222]">
+                                        <select v-model="item.type" class="bg-black text-gray-400 text-xs border border-[#333] rounded px-1 outline-none">
+                                            <option value="video">Video</option>
+                                            <option value="resource">File</option>
+                                            <option value="quiz">Quiz</option>
+                                        </select>
+                                        <input v-model="item.title" placeholder="Item Title" class="bg-transparent border-b border-transparent focus:border-[#444] text-sm text-white flex-1 outline-none">
+                                        <input v-model="item.url" placeholder="URL / ID" class="bg-transparent border-b border-transparent focus:border-[#444] text-xs text-blue-400 w-32 outline-none">
+                                        <button @click="week.content.splice(iIdx, 1)" class="text-gray-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                    <div class="flex gap-2 mt-2">
+                                        <button @click="addItem(week, 'video')" class="text-[10px] bg-[#1a1a1a] hover:bg-[#222] text-gray-400 px-2 py-1 rounded">+ Video</button>
+                                        <button @click="addItem(week, 'resource')" class="text-[10px] bg-[#1a1a1a] hover:bg-[#222] text-gray-400 px-2 py-1 rounded">+ Resource</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REF TAB -->
+                    <div v-if="activeTab === 'refs'" class="space-y-6">
+                        <div class="panel p-6">
+                            <h2 class="text-lg font-bold text-white mb-4">Grading Structure</h2>
+                            <textarea v-model="course.grading" class="input-dark h-32"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">Describe the assessment pattern textually as it appears on the public page.</p>
+                        </div>
+                        
+                        <div class="panel p-6">
+                             <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-bold text-white">Books</h2>
+                                <button @click="course.books.push({title:'', author:'', link:''})" class="text-xs text-[#800000] font-bold hover:underline">+ Add Book</button>
+                             </div>
+                             <div class="space-y-4">
+                                 <div v-for="(book, idx) in course.books" :key="idx" class="p-3 bg-[#111] rounded border border-[#222]">
+                                     <div class="grid gap-2">
+                                         <input v-model="book.title" placeholder="Book Title" class="input-dark text-sm font-bold">
+                                         <div class="flex gap-2">
+                                             <input v-model="book.author" placeholder="Author" class="input-dark text-xs flex-1">
+                                             <input v-model="book.link" placeholder="Download Link" class="input-dark text-xs flex-1 text-blue-400">
+                                             <button @click="course.books.splice(idx, 1)" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
                                          </div>
                                      </div>
                                  </div>
@@ -283,55 +184,21 @@
                         </div>
                     </div>
 
-                    <div v-if="course.weeks.length === 0" class="text-center py-16 text-gray-600 border border-dashed border-[#222] rounded-xl">
-                        <p>No content yet. Add a week to start building the curriculum.</p>
-                    </div>
                 </div>
-                </transition>
-
-                <!-- TOOLBAR PANEL (Quick Tools) -->
-                <div v-if="activeTab === 'media'" class="max-w-3xl mx-auto space-y-6">
-                    <h2 class="text-2xl font-bold text-white mb-6">Media Tools</h2>
-                    
-                    <div class="card p-6 bg-[#0a0a0a]">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Image Resizer & Converter</h3>
-                        <input type="file" @change="handleImageTool" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-900/20 file:text-indigo-400 hover:file:bg-indigo-900/40 mb-4"/>
-                        <div v-if="imageToolResult" class="bg-[#111] p-4 rounded border border-[#222]">
-                            <p class="text-xs text-green-400 mb-2">Processed Successfully!</p>
-                            <img :src="imageToolResult" class="max-h-64 rounded border border-[#333]">
-                        </div>
-                    </div>
-                </div>
-
             </main>
         </div>
     </div>
 
-    <!-- Logic -->
     <script type="module">
         import { createApp } from 'vue';
-        import { loadCourseData, saveCourseToBlob } from './src/compiler.js';
-        import { ImageTools } from './src/media.js';
+        import { loadCourse, exportCourse } from './src/course_data.js';
 
         createApp({
             data() {
                 return {
-                    course: { grading: {}, weeks: [] }, // Init empty to avoid hydration errors
-                    activeTab: 'essentials',
-                    tabs: [
-                        { id: 'essentials', label: 'Essentials', icon: 'fa-solid fa-sliders' },
-                        { id: 'grading', label: 'Grading', icon: 'fa-solid fa-scale-balanced' },
-                        { id: 'curriculum', label: 'Curriculum', icon: 'fa-solid fa-layer-group' },
-                        { id: 'media', label: 'Media Tools', icon: 'fa-solid fa-image' }
-                    ],
-                    unsavedChanges: false,
-                    imageToolResult: null
-                }
-            },
-            computed: {
-                totalWeight() {
-                    if(!this.course.grading) return 0;
-                    return Object.values(this.course.grading).reduce((a, b) => a + Number(b), 0);
+                    course: { info: { instructors: [] }, weeks: [], books: [] },
+                    activeTab: 'info',
+                    unsavedChanges: false
                 }
             },
             watch: {
@@ -341,73 +208,19 @@
                 }
             },
             async mounted() {
-                const data = await loadCourseData('./course.json');
-                this.course = data;
-                 // Reset unsaved flag after load
+                this.course = await loadCourse();
                 this.$nextTick(() => this.unsavedChanges = false);
             },
             methods: {
-                async saveData() {
-                    try {
-                        const blob = saveCourseToBlob(this.course);
-                         if (window.showSaveFilePicker) {
-                            try {
-                                const handle = await window.showSaveFilePicker({ suggestedName: 'course.json' });
-                                const writable = await handle.createWritable();
-                                await writable.write(await blob.text());
-                                await writable.close();
-                                this.unsavedChanges = false;
-                                alert("Saved Successfully");
-                            } catch (e) { console.log('Cancelled'); }
-                        } else {
-                            const a = document.createElement('a'); 
-                            a.href = URL.createObjectURL(blob); 
-                            a.download = 'course.json'; 
-                            a.click();
-                            this.unsavedChanges = false;
-                        }
-                    } catch (e) {
-                        alert("Error saving: " + e.message);
-                    }
+                saveData() {
+                    exportCourse(this.course);
+                    this.unsavedChanges = false;
                 },
                 addWeek() {
-                    if(!this.course.weeks) this.course.weeks = [];
-                    this.course.weeks.push({
-                        title: 'New Module',
-                        isOpen: true,
-                        content: []
-                    });
-                },
-                deleteWeek(idx) {
-                    if(confirm('Delete this week and all its content?')) this.course.weeks.splice(idx, 1);
+                    this.course.weeks.push({ title: 'New Week', desc: '', content: [] });
                 },
                 addItem(week, type) {
-                    const baseItem = { id: Date.now(), type, title: 'New Item' };
-                    if(type === 'video') Object.assign(baseItem, { url: '', duration: '' });
-                    if(type === 'resource') Object.assign(baseItem, { url: '', format: 'link' });
-                    if(type === 'quiz') Object.assign(baseItem, { questions: [], isOpen: true });
-                    week.content.push(baseItem);
-                },
-                addQuestion(quizItem) {
-                    quizItem.questions.push({
-                        type: 'mcq',
-                        text: '',
-                        options: ['', '']
-                    });
-                },
-                getItemCount(week, type) {
-                    if(!week.content) return 0;
-                    return week.content.filter(i => i.type === type).length;
-                },
-                async handleImageTool(e) {
-                    const file = e.target.files[0];
-                    if(!file) return;
-                    try {
-                        const blob = await ImageTools.processImage(file, { maxWidth: 800, format: 'image/webp' });
-                        this.imageToolResult = URL.createObjectURL(blob);
-                    } catch (err) {
-                        alert('Error processing image');
-                    }
+                    week.content.push({ type, title: 'Network Item', url: '' });
                 }
             }
         }).mount('#app');
