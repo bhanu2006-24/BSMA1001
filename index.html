@@ -267,8 +267,8 @@
     <script type="module">
         import { createApp } from 'vue';
         import { loadCourse } from './src/js/course_data.js';
-        import { renderMarkdown, configureMarkdown } from './src/js/md.js';
-        import { CodeCompiler } from './src/js/compiler.js';
+        import { renderMarkdown, configureMarkdown } from './src/services/md.js';
+        import { CodeCompiler } from './src/services/compiler.js';
 
         const compiler = new CodeCompiler();
         configureMarkdown();
@@ -298,7 +298,7 @@
                     return 'text';
                 },
                 activeContent() {
-                    // For generic sections (text type)
+                    // For generic sections (text/compiler)
                     if(this.activeSection && !this.activeItem) return this.activeSection.content;
                     return '';
                 }
