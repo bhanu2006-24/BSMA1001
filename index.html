@@ -14,14 +14,11 @@
     
     <style>
         body { font-family: 'Roboto', sans-serif; background-color: #f8fafc; color: #1e293b; overflow: hidden; }
-        
-        /* Layout */
         .header { height: 60px; border-bottom: 1px border-slate-200; background: white; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
         .sidebar-icon { width: 70px; background: #1e293b; color: #94a3b8; display: flex; flex-direction: column; align-items: center; padding-top: 1rem; flex-shrink: 0; }
         .sidebar-list { width: 300px; background: white; border-right: 1px solid #e2e8f0; overflow-y: auto; flex-shrink: 0; display: flex; flex-col; }
         .main-stage { flex: 1; background: #fff; overflow-y: auto; position: relative; }
         
-        /* Sidebar Elements */
         .icon-btn { padding: 12px 0; width: 100%; display: flex; flex-direction: column; items-center; gap: 4px; font-size: 10px; cursor: pointer; transition: 0.2s; }
         .icon-btn:hover, .icon-btn.active { background: #334155; color: white; }
         
@@ -33,17 +30,14 @@
         .item-row:hover { background: #f1f5f9; color: #0f172a; }
         .item-row.active { background: #fef2f2; color: #b91c1c; border-left-color: #b91c1c; font-weight: 500; }
         
-        /* Content */
         .content-box { max-width: 900px; margin: 0 auto; padding: 40px; min-height: 80vh; }
         
-        /* Markdown override */
         .prose h1 { font-size: 2.25em; margin-bottom: 0.5em; font-weight: 700; color: #1e293b; }
         .prose h2 { font-size: 1.5em; margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; color: #334155; }
         .prose p { margin-bottom: 1em; line-height: 1.7; color: #475569; }
         .prose ul { list-style: disc; padding-left: 1.5em; margin-bottom: 1em; }
         .prose pre { background: #1e293b; color: #e2e8f0; padding: 1em; border-radius: 0.5em; overflow-x: auto; }
         
-        /* Quiz */
         .quiz-option { padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; display: flex; gap: 8px; align-items: start; }
         .quiz-option:hover { background: #f8fafc; border-color: #cbd5e1; }
         .quiz-option input { margin-top: 4px; }
@@ -71,8 +65,6 @@
             </div>
             <div class="flex items-center gap-4 text-slate-500">
                 <span class="text-xs bg-slate-100 px-2 py-1 rounded">v{{ course.meta.version }}</span>
-                <i class="fa-regular fa-bell hover:text-black cursor-pointer"></i>
-                <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs">U</div>
             </div>
         </header>
 
@@ -87,15 +79,11 @@
             <!-- Navigation Sidebar (Sections & Items) -->
             <aside class="sidebar-list">
                 <div v-for="sec in course.sections" :key="sec.id">
-                    <!-- Section Wrapper -->
                     <div @click="toggleSec(sec)" :class="['section-header user-select-none', sec.isOpen ? 'active' : '']">
                         <span>{{ sec.title }}</span>
                         <i :class="['fa-solid fa-chevron-down text-xs transition', !sec.isOpen ? '-rotate-90' : '']"></i>
                     </div>
-                    
-                    <!-- Items List -->
                     <div v-if="sec.isOpen" class="bg-gray-50 pb-2">
-                        <div v-if="sec.items && sec.items.length === 0" class="text-xs text-gray-400 p-4 text-center italic">No content</div>
                         <div v-for="item in sec.items" :key="item.id" 
                             @click="selectItem(sec, item)"
                             :class="['item-row', activeItem === item ? 'active' : '']">
@@ -108,7 +96,6 @@
 
             <!-- Main Stage -->
             <main class="main-stage">
-                <!-- Breadcrumb -->
                 <div class="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-100 px-10 py-3 flex justify-between items-center z-10">
                     <div class="flex items-center gap-2 text-sm text-slate-500">
                         <span class="font-medium text-slate-700">{{ activeSec?.title }}</span>
@@ -119,79 +106,98 @@
                          <span class="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-500">{{ activeItem.language }}</span>
                          <button @click="runCode" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700 transition">
                             <span v-if="isRunning"><i class="fa-solid fa-spinner fa-spin"></i> Running</span>
-                            <span v-else>Run Code <i class="fa-solid fa-play ml-1"></i></span>
+                            <span v-else>Run <i class="fa-solid fa-play ml-1"></i></span>
                          </button>
                     </div>
                 </div>
 
                 <div class="content-box">
                     
-                    <!-- 1. TEXT VIEW -->
+                    <!-- TEXT -->
                     <div v-if="activeItem?.type === 'text'" class="animate-fade-in">
                         <div class="prose max-w-none" v-html="renderMd(activeItem.content)"></div>
                     </div>
 
-                    <!-- 2. VIDEO VIEW -->
+                    <!-- FAQ -->
+                    <div v-else-if="activeItem?.type === 'faq'" class="animate-fade-in space-y-4">
+                        <h2 class="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+                        <div v-for="(faq, i) in activeItem.faqs" :key="i" class="border border-slate-200 rounded-lg p-4">
+                            <h3 class="font-bold text-lg text-slate-800 mb-2">{{ faq.q }}</h3>
+                            <p class="text-slate-600 leading-relaxed">{{ faq.a }}</p>
+                        </div>
+                    </div>
+
+                    <!-- CALENDAR -->
+                    <div v-else-if="activeItem?.type === 'calendar'" class="animate-fade-in">
+                        <h2 class="text-2xl font-bold mb-6">Schedule</h2>
+                        <div class="border border-slate-200 rounded-lg overflow-hidden">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                                    <tr><th class="px-6 py-3">Date</th><th class="px-6 py-3">Event</th><th class="px-6 py-3">Type</th></tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="(evt, i) in activeItem.events" :key="i" class="bg-white hover:bg-slate-50">
+                                        <td class="px-6 py-4 font-mono text-slate-500">{{ evt.date }}</td>
+                                        <td class="px-6 py-4 font-medium text-slate-900">{{ evt.title }}</td>
+                                        <td class="px-6 py-4">
+                                            <span :class="['px-2 py-1 rounded text-xs font-bold uppercase', evt.type==='deadline' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700']">{{ evt.type }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- VIDEO -->
                     <div v-else-if="activeItem?.type === 'video'" class="animate-fade-in">
                         <div class="aspect-video bg-black rounded-lg shadow-lg overflow-hidden mb-6">
                             <video v-if="isLocal(activeItem.url)" :src="activeItem.url" controls class="w-full h-full"></video>
                             <iframe v-else :src="getEmbed(activeItem.url)" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                         </div>
                         <h2 class="text-2xl font-bold mb-2">{{ activeItem.title }}</h2>
-                        <div class="prose max-w-none text-slate-600">
-                             <p>{{ activeItem.description || 'Watch the video lecture above.' }}</p>
-                        </div>
                     </div>
 
-                    <!-- 3. PDF/RESOURCE VIEW -->
+                    <!-- PDF -->
                     <div v-else-if="['pdf','resource'].includes(activeItem?.type)" class="animate-fade-in h-[75vh]">
                         <object :data="activeItem.url" type="application/pdf" class="w-full h-full rounded border border-slate-200">
-                            <div class="flex flex-col items-center justify-center h-full text-slate-500">
-                                <p>PDF Preview not available.</p>
-                                <a :href="activeItem.url" target="_blank" class="text-blue-600 underline mt-2">Download File</a>
-                            </div>
+                             <p>PDF Preview not available. <a :href="activeItem.url">Download</a></p>
                         </object>
                     </div>
 
-                    <!-- 4. QUIZ VIEW -->
+                    <!-- QUIZ -->
                     <div v-else-if="activeItem?.type === 'quiz'" class="animate-fade-in max-w-3xl mx-auto">
                         <div class="bg-blue-50 border-l-4 border-blue-600 p-4 mb-8 text-blue-800 text-sm">
-                            <p class="font-bold">Practice Assessment</p>
-                            <p>Complete the questions below to test your understanding.</p>
+                            <p class="font-bold">Assessment</p>
                         </div>
-
                         <div v-if="activeItem.questions && activeItem.questions.length">
                             <div v-for="(q, idx) in activeItem.questions" :key="idx" class="border border-slate-200 rounded-lg p-6 mb-6 shadow-sm bg-white">
                                 <div class="flex gap-3 mb-4">
-                                    <span class="font-bold text-slate-400 select-none">{{ idx + 1 }}.</span>
+                                    <span class="font-bold text-slate-400">{{ idx + 1 }}.</span>
                                     <div class="prose prose-sm font-medium text-slate-800" v-html="renderMd(q.text)"></div>
                                 </div>
-                                
                                 <div class="pl-8 space-y-2">
-                                    <!-- MCQ/MSQ -->
                                     <div v-if="['mcq','msq'].includes(q.type)">
                                         <label v-for="(opt, oIdx) in q.options" :key="oIdx" class="quiz-option">
                                             <input :type="q.type === 'msq' ? 'checkbox' : 'radio'" :name="'q'+idx" class="accent-red-700 scale-110">
-                                            <span class="text-sm text-slate-600" v-html="renderMd(opt)"></span>
+                                            <span class="text-sm text-slate-600">
+                                                {{ typeof opt === 'object' ? opt.text : opt }}
+                                            </span>
                                         </label>
                                     </div>
-                                    <!-- Boolean -->
                                     <div v-if="q.type === 'boolean'" class="flex gap-4">
-                                        <label class="btn border px-4 py-2 rounded shadow-sm hover:bg-slate-50 cursor-pointer text-sm font-bold"><input type="radio" :name="'q'+idx" value="true"> True</label>
-                                        <label class="btn border px-4 py-2 rounded shadow-sm hover:bg-slate-50 cursor-pointer text-sm font-bold"><input type="radio" :name="'q'+idx" value="false"> False</label>
+                                        <label class="btn border px-4 py-2 rounded font-bold"><input type="radio" :name="'q'+idx" value="true"> True</label>
+                                        <label class="btn border px-4 py-2 rounded font-bold"><input type="radio" :name="'q'+idx" value="false"> False</label>
                                     </div>
-                                    <!-- Numeric -->
                                     <div v-if="q.type === 'numeric'">
                                         <input type="number" class="border border-slate-300 p-2 rounded w-40 text-sm" placeholder="Answer">
                                     </div>
                                 </div>
                             </div>
-                            <button class="bg-red-800 text-white px-8 py-3 rounded font-bold shadow-lg hover:bg-red-900 transition mb-12">Submit Responses</button>
+                            <button @click="submitQuiz(activeItem)" class="bg-red-800 text-white px-8 py-3 rounded font-bold shadow-lg hover:bg-red-900 transition mb-12">Submit Responses</button>
                         </div>
-                        <div v-else class="text-center py-12 text-slate-400">No questions configured.</div>
                     </div>
 
-                    <!-- 5. COMPILER/CODE VIEW -->
+                    <!-- COMPILER -->
                     <div v-else-if="activeItem?.type === 'compiler'" class="content-full h-[70vh] flex flex-col border border-slate-300 rounded overflow-hidden">
                         <textarea v-model="code" class="flex-1 bg-[#1e293b] text-slate-200 p-4 font-mono text-sm leading-relaxed resize-none outline-none" spellcheck="false"></textarea>
                         <div class="h-40 bg-black text-green-400 p-4 font-mono text-xs overflow-y-auto border-t border-slate-600">
@@ -201,12 +207,7 @@
                         </div>
                     </div>
 
-                    <!-- EMPTY/WELCOME -->
-                    <div v-else class="text-center py-20">
-                         <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome</h2>
-                         <p class="text-slate-500">Select a module from the sidebar to begin.</p>
-                    </div>
-
+                    <div v-else class="text-center py-20"><h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome</h2></div>
                 </div>
             </main>
         </div>

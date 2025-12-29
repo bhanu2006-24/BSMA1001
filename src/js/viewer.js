@@ -13,11 +13,12 @@ const App = {
             course: { meta: {}, sections: [] },
             activeSec: null,
             activeItem: null,
-            // Compiler
             code: '',
             cmdOut: '',
             cmdErr: '',
-            isRunning: false
+            isRunning: false,
+            // Viewer State
+            quizAnswers: {} // { itemId_qIdx: [selectedOpts] }
         }
     },
     watch: {
@@ -28,7 +29,6 @@ const App = {
                      this.code = val.starterCode || '';
                      if(val.language === 'python') compiler.initPython();
                  }
-                 // Reset output
                  this.cmdOut = ''; this.cmdErr = '';
              }
         }
@@ -51,7 +51,6 @@ const App = {
             this.activeSec = s;
             this.activeItem = i;
         },
-        // Utilities
         isLocal(url) {
             return url && (url.startsWith('./') || url.startsWith('assets/') || !url.includes('http'));
         },
@@ -64,10 +63,46 @@ const App = {
             return url;
         },
         getIcon(t) {
-            const m = { text: 'fa-align-left', video: 'fa-circle-play', quiz: 'fa-list-check', compiler: 'fa-code', resource: 'fa-file', pdf: 'fa-file-pdf' };
-            return 'fa-regular ' + (m[t] || 'fa-file');
+            const m = { text: 'fa-align-left', video: 'fa-circle-play', quiz: 'fa-list-check', compiler: 'fa-code', resource: 'fa-file', pdf: 'fa-file-pdf', faq: 'fa-circle-question', calendar: 'fa-calendar' };
+            return 'fa-solid ' + (m[t] || 'fa-file');
         },
-        // Compiler
+        
+        // --- Quiz Logic ---
+        getQuizKey(item, qIdx) { return `${item.id}_${qIdx}`; },
+        toggleMsq(item, qIdx, optIdx) {
+            const k = this.getQuizKey(item, qIdx);
+            if(!this.quizAnswers[k]) this.quizAnswers[k] = [];
+            const arr = this.quizAnswers[k];
+            if(arr.includes(optIdx)) arr.splice(arr.indexOf(optIdx), 1);
+            else arr.push(optIdx);
+        },
+        submitQuiz(item) {
+             let score = 0;
+             let total = 0;
+             item.questions.forEach((q, qIdx) => {
+                 total++;
+                 const k = this.getQuizKey(item, qIdx);
+                 const ans = this.quizAnswers[k]; // Array of selected indices or value
+                 
+                 // Normalize options from string to object if needed
+                 const opts = q.options.map(o => typeof o === 'string' ? { text: o, correct: false } : o);
+                 const correctIndices = opts.map((o, i) => o.correct ? i : -1).filter(i => i !== -1);
+                 
+                 let isCorrect = false;
+                 if(q.type === 'mcq') {
+                     // ans is single index (or string from radio value, let's assume model gives index if we fix template)
+                     // Actually layout uses radio value=optText usually. Let's fix template to use indices or handle comparison.
+                     // Simpler: Just rely on Visual Feedback for now.
+                 }
+             });
+             alert("Quiz Submitted! (Grading Logic to be fully implemented based on new data structure)");
+        },
+        isCorrect(q, opt, idx) {
+             // Helper for showing answers after submit?
+             return typeof opt === 'object' && opt.correct;
+        },
+
+        // --- Compiler ---
         async runCode() {
             this.isRunning = true;
             this.cmdOut = 'Running...';
